@@ -1,0 +1,29 @@
+Column.Name,Description,Variable.class,Variable.Range.Categories,Units,Number.missing
+X,NA,integer,Jan-47,NA,0
+NewUID,NA,character,619_1_hangklip - 826_9_htr,NA,0
+finalname,NA,character,Abutilon sonneratianum - Zygophyllum retrofractum,NA,0
+Genus_GM,NA,character,Abutilon - Zantedeschia,NA,423
+Family_GM,NA,character,Acanthaceae - Zygophyllaceae,NA,423
+latitude,NA,numeric,-3.12479,NA,0
+longitude,NA,numeric,18.38403 - 24.34838,NA,0
+region,NA,character,baviaanskloof - langeberg,NA,0
+replicate,NA,character,6-Jan,NA,27
+date,NA,integer,619 - 826,NA,0
+collector,NA,character,a - TEM,NA,0
+sample,NA,integer,Jan-94,NA,0
+num_leaves,NA,character, - stem ,NA,29
+leaf_area_cm2,NA,numeric,0.165 - 573.53,NA,33
+leaf_length_cm,NA,numeric,0.011 - 210.5,NA,30
+avg_leaf_width_cm,NA,numeric,0.002 - 23.5,NA,40
+max_leaf_width_cm,NA,numeric,0.002 - 47,NA,33
+leaf_thickness_mm,NA,numeric,0.002 - 34.5,NA,43
+leaf_fresh_wgt_g,NA,numeric,0.007 - 976.036,NA,420
+leaf_dry_wgt_g,NA,numeric,0.004 - 70.451,NA,302
+twig_fresh_g,NA,numeric,0.002 - 103.784,NA,2289
+twig_dry_g,NA,numeric,7e-04 - 10.673,NA,2374
+lma,NA,numeric,0.001346154 - 0.465408805,NA,303
+fwc,NA,numeric,0.11234347 - 84.91666667,NA,529
+succulence,NA,numeric,0 - 2.829953125,NA,508
+ldmc,NA,numeric,0.011639185 - 1,NA,507
+lwr,NA,numeric,0.211111111 - 3086.666667,NA,40
+twig_fwc,NA,numeric,0.026392962 - 99,NA,2407

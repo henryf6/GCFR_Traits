@@ -14,12 +14,10 @@ library(raster)
 library(stringr)
 library(dplyr)
 
+# Read the CSV file containing point data of field trait collections
+point_data <- st_read('GCFR_Traits/Spatial_Data/Field_Trait_Locations.geojson')
 
-
-# Step 1: Read the CSV file containing GPS point data
-point_data <- st_read('/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/Data/SpatialData/Field_Trait_Locations.geojson')
-
-# Step 2: Read the folder containing GeoTIFF files
+# Step 2: Read the folder containing GeoTIFF files (available via CHELSA or upon request of co-author)
 tiff_folder <- "/Volumes/Extreme_SSD/1981-2010/pr"
 tiff_files <- list.files(tiff_folder, pattern = "\\.tif$", full.names = TRUE)
 
@@ -29,7 +27,7 @@ variable_names <- c()
 
 # Loop through the GeoTIFF files
 for (i in 1:length(tiff_files)) {
-  # Step 3: Read the GeoTIFF file
+  # Read the GeoTIFF file
   raster_data <- raster(tiff_files[i])
   
   # Extract the variable name from the file path
@@ -70,21 +68,23 @@ for (i in 1:length(tiff_files)) {
 colnames(extracted_data) <- variable_names
 
 extracted_data <- as.data.frame(extracted_data)
-# Step 1: Calculate the sum of each row across all columns
+
+# The following steps calculate the percent of rainfall in the austral winter
+# Calculate the sum of each row across all columns
 extracted_data <- extracted_data %>%
   mutate(AnnualTotPr = rowSums(across(everything())))
 
-# Step 2: Calculate the denominator as the sum of col1, col2, and col3
+# Calculate the denominator as the sum of col1, col2, and col3
 extracted_data <- extracted_data %>%
   mutate(WinterRainfallTot = pr_06 + pr_07 + pr_08)
 
 
-# Step 3: Create the new column by dividing row_sum by the denominator
+# Create the new column by dividing row_sum by the denominator
 extracted_data  <- extracted_data  %>%
   mutate(WinterPrProp = WinterRainfallTot / AnnualTotPr)
 extracted_data
 
-# Step 1: Define.48 threshold of WinterPrProp
+# Define.48 threshold of WinterPrProp, categorize regions to winter rainfal, neither, or summer/allyear
 extracted_data <- extracted_data %>%
   mutate(RainfallCat = case_when(
     WinterPrProp >= 0.48 ~ "Winter",
@@ -94,14 +94,12 @@ extracted_data <- extracted_data %>%
 
 extracted_data <- extracted_data %>% dplyr::select(!AnnualTotPr)
 
-# Step 4: Write the merged CSV with extracted values
+# Write the merged CSV with extracted values
 merged_data <- cbind(point_data, extracted_data)
 
-data_output_path = '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/Data/ClimateSummaryData'
+data_output_path = 'GCFR_Traits/Data_Workflow_1_Environmental_Join/Climate_Summary_Data_Outputs'
 
 write.csv(point_data, paste0(data_output_path,'/Rainfall_field_traits.csv'))
-
-
 
 # Write out regional summary
 regional_summary <- merged_data %>% group_by(region) %>%

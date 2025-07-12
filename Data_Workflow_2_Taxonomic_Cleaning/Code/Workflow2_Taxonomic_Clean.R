@@ -8,7 +8,6 @@
 # Most recent modification: 
 # Author(s): Henry Frye, Copilot
 ########################################################
-if(Sys.info()['user']=='henryfrye') setwd("/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper")
 
 # Load libraries
 library(tidyverse)
@@ -17,15 +16,16 @@ library(taxize)
 library(arrow)
 
 # Read in data
-labtrait <- read.csv('GCFR_Traits/Summary_Use_Case_Workflows/Data_Inputs/LabTraitDataERT.csv')
-fieldtrait <- read.csv('GCFR_Traits/Summary_Use_Case_Workflows/Data_Inputs/FieldTraitDataERT.csv')
-vnirspec <- read.csv('GCFR_Traits/Summary_Use_Case_Workflows/Data_Inputs/GCFRSpectralLibraryEcoSisV3.csv')
-spectrait <- read.csv('GCFR_Traits/Summary_Use_Case_Workflows/Data_Inputs/speciesXtraits.csv')
+labtrait <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/LabTraitDataERT.csv')
+fieldtrait <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/FieldTraitDataERT.csv')
+vnirspec <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/GCFRSpectralLibraryEcoSisV3.csv')
+spectrait <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/speciesXtraits.csv')
+releve <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/Releve_All.csv')
 
 # Check lab traits ####
 
 # check the species differences with the manning and goldblatt text
-gm_taxa <- read.csv(file = 'GCFR_Traits/Summary_Use_Case_Workflows/Data_Inputs/GMTaxonomy.csv')
+gm_taxa <- read.csv(file = 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/GMTaxonomy.csv')
 sp_id_misalign_lab <- labtrait %>% dplyr::filter(! finalname %in% gm_taxa$Taxon)
 
 # how many taxa are off
@@ -79,7 +79,7 @@ sp_id_misalign_vnir <- vnirspec %>% dplyr::filter(! finalname %in% gm_taxa$Taxon
 length(unique((sp_id_misalign_field$finalname))) # great 0 as well!
 
 # WFO taxa match for lab traits ####
-wfo_taxonomy <- read_tsv_arrow("/Users/henryfrye/Dropbox/Intellectual_Endeavours/Wisconsin/ArboretumPhyloPheno/LngArbCode/PhylogeneticCode/classification2.csv")
+wfo_taxonomy <- read_tsv_arrow("/Users/henryfrye/Dropbox/Intellectual_Endeavours/Wisconsin/ArboretumPhyloPheno/LngArbCode/PhylogeneticCode/classification_v.2023.12.csv")
 
 # Check names of arboretum against World Flora
 NameCheck <- WFO.match(spec.data = labtrait, WFO.data= wfo_taxonomy, spec.name = "finalname",
@@ -98,7 +98,7 @@ labtrait_taxa_cleaned <- labtrait_wfo %>% rename('ScientificName_WFO' = scientif
   dplyr::select(NewUID, Species:Family_GM, ScientificName_WFO, scientificNameAuthorship, Family_WFO, latitude:twig_fwc)
 
 
-write.csv(labtrait_taxa_cleaned, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Summary_Use_Case_Workflows/Cleaned_data/lab_trait_taxa_clean.csv',row.names= FALSE)
+write.csv(labtrait_taxa_cleaned, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/lab_trait_taxa_clean.csv',row.names= FALSE)
 
 # WFO taxa match for field traits
 
@@ -117,7 +117,7 @@ fieldtrait_taxa_cleaned <- fieldtrait_wfo %>% rename('ScientificName_WFO' = scie
                                                  'NewUID' = NewUID.x) %>% 
   dplyr::select(NewUID, Species:Family_GM, ScientificName_WFO, scientificNameAuthorship, Family_WFO, latitude:d_13C_12C)
 
-write.csv(fieldtrait_taxa_cleaned, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Summary_Use_Case_Workflows/Cleaned_data/field_trait_taxa_clean.csv',row.names= FALSE)
+write.csv(fieldtrait_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/field_trait_taxa_clean.csv',row.names= FALSE)
 
 # WFO taxa match for species traits ####
 
@@ -138,7 +138,7 @@ spectrait_taxa_cleaned <- spectrait_wfo %>% rename('ScientificName_WFO' = scient
 spectrait_taxa_cleaned <-  spectrait_taxa_cleaned %>% mutate(family_GM = str_to_title(family_GM),
                                   family_POSA= str_to_title(family_POSA))
 
-write.csv(spectrait_taxa_cleaned, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Summary_Use_Case_Workflows/Cleaned_data/species_trait_taxa_clean.csv',row.names= FALSE)
+write.csv(spectrait_taxa_cleaned, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/species_trait_taxa_clean.csv',row.names= FALSE)
 
 # WFO taxa match for vnir spectroscopy data ####
 
@@ -155,4 +155,21 @@ vnir_wfo <- left_join(vnirspec, NameCheck_mini_simple_vnir, by = c('finalname' =
 vnir_taxa_cleaned <- vnir_wfo %>% rename('ScientificName_WFO' = scientificName, 'Family_WFO' = family) %>% 
   dplyr::select(NewUID, finalname, Genus, Species, FamilyManningGoldblatt, ScientificName_WFO, scientificNameAuthorship, Family_WFO, Latitude:X949)
 
-write.csv(vnir_taxa_cleaned, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Summary_Use_Case_Workflows/Cleaned_data/vnir_taxa_clean.csv',row.names= FALSE)
+write.csv(vnir_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/vnir_taxa_clean.csv',row.names= FALSE)
+
+# WFO taxa match for releve data ####
+
+NameCheck_releve <- WFO.match(spec.data = releve, WFO.data= wfo_taxonomy, spec.name = "Species",
+                            Fuzzy.min = TRUE)
+Name_single_releve <- WFO.one(NameCheck_releve)
+
+NameCheck_sel_releve <- Name_single_releve %>% dplyr::select(Species.ORIG, scientificName, family, scientificNameAuthorship)
+
+NameCheck_mini_simple_releve <- NameCheck_sel_releve %>% distinct()
+
+releve_wfo <- left_join(releve, NameCheck_mini_simple_releve, by = c('Species' = 'Species.ORIG'))
+
+releve_taxa_cleaned <- releve_wfo %>% rename('ScientificName_WFO' = scientificName, 'Family_WFO' = family) %>% 
+  dplyr::select(Species, Family, ScientificName_WFO, scientificNameAuthorship, Family_WFO, Plot:RelPercCover)
+
+write.csv(releve_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/releve_taxa_clean.csv',row.names= FALSE)

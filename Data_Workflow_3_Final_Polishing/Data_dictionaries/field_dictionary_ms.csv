@@ -1,0 +1,25 @@
+Column Name,Description,Variable Class,Variable Range Categories,Units,Number missing
+unique_ID,"A unique value that identifies the collection of a particular species, at a particular location, on a particular day.  The value is based on Date_Sample_Subregion",character,619_1_hangklip - 826_9_htr,NA,0
+scientific_name_original,Latin binomial assigned to plant,character,Abutilon sonneratianum - Zygophyllum retrofractum,NA,0
+genus_MG,Genus of plant based on the Manning and Goldblatt (2012) taxonomy,character,Abutilon - Zantedeschia,NA,116
+family_MG,Family of plant based on the Manning and Goldblatt (2012) taxonomy,character,Acanthaceae - Zygophyllaceae,NA,116
+scientific_name_WFO,Latin binomial of plant based on the World Flora Online v.2023.12 static backbone,character,Abutilon sonneratianum - Zygophyllum retrofractum,NA,1
+scientific_name_authorship,Taxonomic authorship assigned to the World Flora Online taxa,character,(A.DC.) F.White - Willd.,NA,7
+family_WFO,Plant family based on the World Flora Online  v.2023.12 static backbone,character,Acanthaceae - Zygophyllaceae,NA,1
+latitude,Latitude in decimal degrees,numeric,-34.36736Ê-Ê-31.24257,decimal degrees,0
+longitude,Longitude in decmial degrees,numeric,18.38403 - 24.34838,decimal degrees,0
+subregion,Subregion category,character,baviaanskloof - langeberg,NA,0
+date,Date of trait collection,Date,2010-07-21 - 2014-08-26,yyyy-mm-dd,0
+collector,"Collector initial code, retained for provenance of unique identifier",character,a - TEM,NA,0
+sample,Sample number of individual collected,integer,Jan-94,NA,0
+height_cm,Vegetation height,numeric,0 - 2500,cm,0
+canopy_axis_1_cm,Length of canopy axis 1,numeric,1 - 1400,cm,0
+canopy_axis_2_cm,Length of canopy axis 2,numeric,0.5 - 1300,cm,0
+canopy_area_cm2,Canopy area calculation,numeric,0.392699082 - 1429424.657,cm2,0
+branch_order,"Ordinal measure (0 to 4) of branch order, a measure of complexity of branching, with higher values representing greater complexity",integer,0 - 4,NA,14
+pubescence,"Categorical value indicating presence of pubescence (hair) on leaves (l), stems (s), both leaves and stems (b), or neither (n). NA indicates lack of measurement, not necessarily lack of pubescence.",character,B - S,NA,531
+percent_N, d,numeric,0.2 - 4.837029217,%,119
+percent_C,Percent of Carbon content of leaf,numeric,14.38804359 - 415.884074,%,119
+C_to_N_ratio,Carbon to nitrogen ratio,numeric,6.654625191 - 234.89,NA,119
+d_15N_14N,Ratio of _15N to _14N isotopes,numeric,-10.26540887Ê-Ê17.38413758,ä,119
+d_13C_12C,Ratio of _13C to _12C isotopes,numeric,-33.2334073Ê-Ê-11.50918626,ä,119

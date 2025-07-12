@@ -16,17 +16,14 @@ library(dplyr)
 library(stringr)
 library(tidyverse)
 
-# Set the path to the directory containing the TIFF files
+# Set the path to the directory containing the TIFF files (these files are accessible through EarthExplorer or from request of lead author)
 tiff_directory <- '/Volumes/Extreme_SSD/EarthEnginePellieData'
 
 # Read the CSV file containing point data
-point_data <- st_read('/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/Data/SpatialData/Field_Trait_Locations.geojson')
+point_data <- st_read('GCFR_Traits/Spatial_Data/Field_Trait_Locations.geojson')
 
 # Get the unique raster folders from the CSV file
 tiff_folders <- c("Chili", "Dem", "TopoDiv") 
-
-# Read the raster files
-#raster_files <- list.files(pattern = "*.tif")
 
 # Create an empty list to store the extracted values
 extracted_values <- list()
@@ -49,9 +46,6 @@ for (folder in tiff_folders) {
     
     # Extract raster values for each point
     values <- terra::extract(raster_data, projected_points)
-    
-    #result <- sub(".*/([^/]+)/image.*", "\\1", file)
-    #colnames(values)[2] <- result[1]
     values <- values[,-1]
     # Join extracted values back to data
     joined_points <- cbind(projected_points,values)
@@ -71,7 +65,7 @@ for (folder in tiff_folders) {
 }
 
 
-#now merge data together
+# Now merge data together
 colnames(extracted_folder$Chili) <- c("longitude", "latitude",'Chili')
 extracted_folder$Chili <- unique(extracted_folder$Chili)
 point_data <- dplyr::left_join(point_data, extracted_folder$Chili, by = c("longitude", "latitude"))
@@ -87,23 +81,18 @@ point_data <- dplyr::left_join(point_data, extracted_folder$TopoDiv, by = c("lon
 # Check missingingness
 missing_elev <- which(is.na(point_data$Elevation) == TRUE)
 
-# note a couple missing values in HTR, but unlikely to affect range reporting
+# Note a couple missing values in HTR, but unlikely to affect range reporting
 point_data$region[missing_elev]
 
-# write out full join
-
-# write out region summary
-
-#dem has a scale factor of 30.922080775909325
+# DEM has a scale factor of 30.922080775909325
 point_data$Elevation <- point_data$Elevation * (1/30.922080775909325)
 
-
-# write out full join
-data_output_path = '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/Data/ClimateSummaryData'
+# Write out full join
+data_output_path = 'GCFR_Traits/Data_Workflow_1_Environmental_Join/Climate_Summary_Data_Outputs'
 
 write.csv(point_data, paste0(data_output_path,'/Elevation_field_traits.csv'))
 
-# write out region summary
+# Write out region summary
 region_summary <- point_data %>% group_by(region) %>%
   summarise(maxElev = max(Elevation, na.rm = TRUE),
             minElev = min(Elevation, na.rm = TRUE))
