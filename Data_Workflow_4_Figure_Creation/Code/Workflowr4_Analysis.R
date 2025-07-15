@@ -14,6 +14,7 @@ library(ggpubr)
 
 # Read in data
 field <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Field_Traits_Final.csv')
+lab <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Lab_Traits_Final.csv') 
 
 # create figure path
 figpath<- 'GCFR_Traits/Data_Workflow_4_Figure_Creation/Figures/'
@@ -69,4 +70,66 @@ combined_foliar_chem
 
 ggsave(filename = paste0(figpath, 'foliar_summary_plot.tiff'), plot = combined_foliar_chem, width = 8, dpi = 300, units = "in",
        bg= 'white')
+
+# Figures for lab data ####
+
+# re-level the subregion categories for nice display
+lab$subregion <- factor(x = lab$subregion, levels = unique(lab$subregion),
+                          labels = c("Baviaanskloof", "Hantam-Tanqua-\nRoggeveld", "Hangklip", "Langeberg", "Cederberg", "Cape Point"))
+
+lab <- lab %>% rename('Subregion' = 'subregion')
+
+# leaf mass per area
+lma <- ggplot(lab, aes(x = lma, color = Subregion)) + geom_density() + theme_classic() +
+  xlab('Leaf mass per area') + 
+  xlim(0,0.1) +
+  ylab('Density')
+lma
+
+# leaf water content
+lwc <- ggplot(lab, aes(x = fwc, color = Subregion)) + geom_density() + theme_classic() +
+  xlab('Leaf water content') + 
+  xlim(0,20) +
+  ylab('Density')
+lwc
+
+# leaf thickness
+thick <- ggplot(lab, aes(x = leaf_thickness_mm, color = Subregion)) + geom_density() + theme_classic() +
+  xlab('Thickness') + 
+  xlim(0,2) +
+  ylab('Density')
+thick
+
+# lwr
+lwr <- ggplot(lab, aes(x = lwr, color = Subregion)) + geom_density() + theme_classic() +
+  xlab('Leaf length to width ratio') + 
+  xlim(0,20) +
+  ylab('Density')
+lwr
+
+
+combined_foliar_struct <-ggarrange(lma, lwc, thick, lwr, ncol = 2, nrow = 2,
+                                 common.legend = TRUE,
+                                 legend = "right"
+) + theme(text = element_text(size = 12, family = "Arial"))
+combined_foliar_struct
+
+ggsave(filename = paste0(figpath, 'foliar_summary_plot_struct.tiff'), plot = combined_foliar_struct, width = 8, dpi = 300, units = "in",
+       bg= 'white')
+
+# An alternative visualization
+major_fams <- c('Restionaceae', 'Ericaceae', 'Proteaceae','Aizoaceae')
+lab_fams <- lab %>% dplyr::filter(family_WFO %in% major_fams)
+succulence_fam <- ggplot(lab_fams, aes(x = succulence, color = family_WFO)) + geom_density() + theme_classic() +
+  xlab('Leaf succulence') + 
+  xlim(0,0.5) +
+  ylab('Density')
+succulence_fam
+
+lma_fam <- ggplot(lab_fams, aes(x = lma, color = family_WFO)) + geom_density() + theme_classic() +
+  xlab('Leaf mass per area') + 
+#  xlim(0,0.5) +
+  ylab('Density')
+lma_fam
+
 

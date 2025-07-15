@@ -76,6 +76,58 @@ write.csv(fieldtrait_polished_no_dupes, '/Users/henryfrye/Dropbox/Intellectual_E
 
 # Clean up columns for lab traits #####
 
+labtrait_polished <- labtrait %>% rename('unique_ID' = 'NewUID', # ID system is no longer "new"
+                                             'scientific_name_original' = 'Species', # original designation
+                                             'genus_MG' = 'Genus_GM', # match the order of the flora citation
+                                             'family_MG' = 'Family_GM', # match the order of the flora citation
+                                             'scientific_name_WFO' = 'ScientificName_WFO', # match other column name format
+                                             'scientific_name_authorship' = 'scientificNameAuthorship',
+                                             'family_WFO' = 'Family_WFO',
+                                             'subregion' = 'region') # match manuscript descriptions
+
+# Create year of measurement column (based on this file: /Users/henryfrye/Dropbox/Intellectual_Endeavours/UConn/Research/ZA_Dimensions_Data/data_base/Spec_Trait_All.csv)
+labtrait_polished <- labtrait_polished %>% mutate(year = case_when(
+  subregion == 'baviaanskloof' ~ 2011,
+  subregion == 'htr' ~ 2014,
+  subregion == 'hangklip' ~ 2012,
+  subregion == 'langeberg' ~ 2012,
+  subregion == 'cederberg' ~ 2012,
+  subregion == 'cape_point' ~ 2010
+))
+
+
+# Format and convert dates
+lab_dates_str <- sprintf("%04d", labtrait_polished$date)
+month <- substr(lab_dates_str, 1, 2)
+day <- substr(lab_dates_str, 3, 4)
+full_dates_lab <- paste(labtrait_polished$year,month, day, sep = "-")
+labtrait_polished$date <- as.Date(full_dates_lab)
+
+# year column no longer necessary
+labtrait_polished <- labtrait_polished %>% dplyr::select(!year)
+
+# Clean the column
+labtrait_polished <- labtrait_polished %>%
+  mutate(
+    num_leaves = na_if(num_leaves, ""), # Convert "" to NA
+    num_leaves = na_if(num_leaves, "missing"), # Convert "missing" to NA
+    num_leaves = str_trim(num_leaves),  
+    num_leaves = case_when( 
+      num_leaves == "1*" ~ "stem", # based on notes in original sheet
+      TRUE ~ num_leaves))
+
+# remove obvious 400% carbon outlier and make missing
+fieldtrait_polished <- fieldtrait_polished %>% mutate(percent_C = na_if(percent_C,max(fieldtrait_polished$percent_C, na.rm = TRUE)))
+                                                 
+# Return only the first occurring row duplicate
+labtrait_polished_no_dupes <- labtrait_polished %>%
+  filter(!duplicated(.))
+
+# write out polished file
+write.csv(labtrait_polished_no_dupes, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Lab_Traits_Final.csv',
+          row.names= FALSE)
+
+
 # Clean up columns for species traits #####
 
 # Clean up columns for vnir spectroscopy #####
@@ -144,6 +196,14 @@ length(unique(fieldtrait_polished_no_dupes$unique_ID))
 length(unique(fieldtrait_polished_no_dupes$scientific_name_original))
 length(unique(fieldtrait_polished_no_dupes$scientific_name_WFO)) # use WFO number since a couple names were synonyms
 
+# species with highest and low N value
+fieldtrait_polished_no_dupes[which(fieldtrait_polished_no_dupes$percent_N == min(fieldtrait_polished_no_dupes$percent_N, na.rm = TRUE)),]
+fieldtrait_polished_no_dupes[which(fieldtrait_polished_no_dupes$percent_N == max(fieldtrait_polished_no_dupes$percent_N, na.rm = TRUE)),]
+
+# species with highest and low C value
+fieldtrait_polished_no_dupes[which(fieldtrait_polished_no_dupes$percent_C == min(fieldtrait_polished_no_dupes$percent_C, na.rm = TRUE)),]
+fieldtrait_polished_no_dupes[which(fieldtrait_polished_no_dupes$percent_C == max(fieldtrait_polished_no_dupes$percent_C, na.rm = TRUE)),]
+
 # Explore missing genus_GM taxa
 missing_gen <- fieldtrait_polished_no_dupes[which(is.na(fieldtrait_polished_no_dupes$genus_MG) == TRUE),]
 
@@ -164,6 +224,39 @@ table(missing_N$subregion)
 table(missing_N$family_MG)
 
 # Data dictionary create for lab traits ####
+
+# create data dictionary for lab traits
+lab_dict <- create_data_dictionary(labtrait_polished_no_dupes)
+
+write.csv(lab_dict, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_dictionaries/lab_dictionary_raw.csv',
+          row.names = FALSE)
+
+# Unique number of entries
+length(unique(labtrait_polished_no_dupes$unique_ID))
+
+# Highest and lowest lma species
+labtrait_polished_no_dupes[which(labtrait_polished_no_dupes$lma == min(labtrait_polished_no_dupes$lma, na.rm = TRUE)),]
+labtrait_polished_no_dupes[which(labtrait_polished_no_dupes$lma == max(labtrait_polished_no_dupes$lma, na.rm = TRUE)),]
+
+# Highest and lowest lwc species
+labtrait_polished_no_dupes[which(labtrait_polished_no_dupes$fwc == min(labtrait_polished_no_dupes$fwc, na.rm = TRUE)),]
+labtrait_polished_no_dupes[which(labtrait_polished_no_dupes$fwc == max(labtrait_polished_no_dupes$fwc, na.rm = TRUE)),]
+
+# Highest and lowest thickness species
+labtrait_polished_no_dupes[which(labtrait_polished_no_dupes$leaf_thickness_mm == min(labtrait_polished_no_dupes$leaf_thickness_mm, na.rm = TRUE)),]
+labtrait_polished_no_dupes[which(labtrait_polished_no_dupes$leaf_thickness_mm == max(labtrait_polished_no_dupes$leaf_thickness_mm, na.rm = TRUE)),]
+
+# Highest and lowest lwr species
+labtrait_polished_no_dupes[which(labtrait_polished_no_dupes$lwr == min(labtrait_polished_no_dupes$lwr, na.rm = TRUE)),]
+labtrait_polished_no_dupes[which(labtrait_polished_no_dupes$lwr == max(labtrait_polished_no_dupes$lwr, na.rm = TRUE)),]
+
+# missingness of area
+missing_area <- labtrait_polished_no_dupes[which(is.na(labtrait_polished_no_dupes$leaf_area_cm2) == TRUE),]
+missing_area
+
+missing_fresh_wt <- labtrait_polished_no_dupes[which(is.na(labtrait_polished_no_dupes$leaf_fresh_wgt_g) == TRUE),]
+missing_fresh_wt
+table(missing_fresh_wt$subregion)
 
 # Data dictionary create for species traits ####
 
