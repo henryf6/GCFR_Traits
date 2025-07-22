@@ -130,6 +130,96 @@ write.csv(labtrait_polished_no_dupes, '/Users/henryfrye/Dropbox/Intellectual_End
 
 # Clean up columns for species traits #####
 
+spectrait_polished <- spectrait %>% rename('scientific_name_original' = 'species', # original designation
+                                           'scientific_name_MG' = 'genus_species_GM',
+                                             'family_MG' = 'family_GM', # match the order of the flora citation
+                                             'scientific_name_WFO' = 'ScientificName_WFO', # match other column name format
+                                             'scientific_name_authorship' = 'scientificNameAuthorship',
+                                             'family_WFO' = 'Family_WFO') 
+
+# remove extraneous column (family designation based on Plants of South Africa)
+spectrait_polished <- spectrait_polished %>% dplyr::select(!family_POSA)
+
+# investigate blank scientific_name_original rows
+spectrait_polished[which(spectrait_polished$scientific_name_original == ''),]
+
+# remove the wonky Albuca cf. namaquensis entry... it doesn't appear in the other datasets
+spectrait_polished <- spectrait_polished %>% dplyr::filter(scientific_name_MG != 'Albuca cf. namaquensis')
+
+# Convert blank entries for lifecycle_POSA to NA
+unique(spectrait_polished$lifecycle_POSA)
+spectrait_polished <- spectrait_polished %>% mutate(lifecycle_POSA =  na_if(lifecycle_POSA, "")) # Convert "" to NA
+
+# Clean up flower begin
+unique(spectrait_polished$flower_begin)
+table(spectrait_polished$flower_begin)
+spectrait_polished[which(spectrait_polished$flower_begin == 'A'),] # A stands for all-year
+spectrait_polished[which(spectrait_polished$flower_begin == 'E'),] # Almost all-year
+spectrait_polished[which(spectrait_polished$flower_begin == 'H'),] # Unknown meaning
+spectrait_polished[which(spectrait_polished$flower_begin == 'I'),] # unsure on meaning, MG has this as Nov.–May.
+spectrait_polished[which(spectrait_polished$flower_begin == 'R'),] # entry for this is Oct.–Nov, best to change
+spectrait_polished[which(spectrait_polished$flower_begin == '?'),] # unknown
+
+spectrait_polished <- spectrait_polished %>% mutate(
+                      flower_begin =na_if(flower_begin,'H'),
+                      flower_begin = na_if(flower_begin,'?'),
+                      flower_begin = na_if(flower_begin,''),
+                      flower_begin = case_when( flower_begin == 'A' ~ 'All year',
+                                           flower_begin == 'E' ~ 'Almost all year',
+                                           flower_begin == 'I' ~ 'Nov',
+                                           flower_begin == 'R' ~ 'Oct',
+                                           TRUE ~ flower_begin))
+table(spectrait_polished$flower_begin)
+
+# clean up flower end column
+unique(spectrait_polished$flower_end)
+spectrait_polished[which(spectrait_polished$flower_end == '?'),]
+
+spectrait_polished <- spectrait_polished %>% mutate(
+  flower_end = na_if(flower_end,'?'),
+  flower_end = na_if(flower_end,''))
+unique(spectrait_polished$flower_end)
+
+# clean up alt flower begin column
+unique(spectrait_polished$flower_begin_alt)
+spectrait_polished <- spectrait_polished %>% mutate(
+  flower_begin_alt = na_if(flower_begin_alt,''))
+  
+unique(spectrait_polished$flower_begin_alt)
+
+# clean up alt flower end column
+unique(spectrait_polished$flower_end_alt)
+spectrait_polished <- spectrait_polished %>% mutate(
+  flower_end_alt = na_if(flower_end_alt,''))
+
+# clean up functional twig column
+unique(spectrait_polished$functional_twig)
+
+spectrait_polished <- spectrait_polished %>% mutate(
+  functional_twig = na_if(functional_twig,''),
+  functional_twig = case_when( functional_twig == '0' ~ 'no',
+  TRUE ~ functional_twig))
+
+# clean up leaf type column
+unique(spectrait_polished$leaf_type)
+spectrait_polished <- spectrait_polished %>% mutate(
+  leaf_type = case_when( leaf_type == 'Leaf' ~ 'leaf',
+                         leaf_type == 'Cladode' ~ 'cladode',
+                         leaf_type == 'Cladodes' ~ 'cladode',
+                         leaf_type == 'Frond' ~ 'frond',
+                         leaf_type == 'None' ~ 'none',
+                         leaf_type == 'Phyllode' ~ 'phyllode',
+                         leaf_type == 'microphylls' ~ 'microphyll',
+                               TRUE ~ leaf_type))
+
+# remove functional twig column as this was a project specific designation
+# and not for general use
+spectrait_polished <- spectrait_polished %>% dplyr::select(!functional_twig)
+which(spectrait_polished  %>% duplicated() == TRUE)
+# write out polished file
+write.csv(spectrait_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Species_Traits_Final.csv',
+          row.names= FALSE)
+
 # Clean up columns for vnir spectroscopy #####
 
 # Clean up columns for releve data #####
@@ -213,13 +303,13 @@ missing_order
 
 # Explore missing pubescence
 missing_pub <- fieldtrait_polished_no_dupes[which(is.na(fieldtrait_polished_no_dupes$pubescence) == TRUE),]
-View(missing_pub)
+
 table(missing_pub$subregion)
 table(fieldtrait_polished_no_dupes$subregion)
 
 # Explore missing chemistry
 missing_N <- fieldtrait_polished_no_dupes[which(is.na(fieldtrait_polished_no_dupes$percent_N) == TRUE),]
-View(missing_N)
+
 table(missing_N$subregion)
 table(missing_N$family_MG)
 
@@ -259,6 +349,19 @@ missing_fresh_wt
 table(missing_fresh_wt$subregion)
 
 # Data dictionary create for species traits ####
+spectrait_dict <- create_data_dictionary(spectrait_polished)
+
+write.csv(spectrait_dict, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_dictionaries/species_trait_dictionary_raw.csv',
+          row.names = FALSE)
+
+
+
+
+
+### ERROR in step 2 cut columns off, needs to be re-run!!!! ####
+
+
+
 
 # Data dictionary create for vnir spectroscopy ####
 

@@ -22,6 +22,8 @@ vnirspec <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs
 spectrait <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/speciesXtraits.csv')
 releve <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/Releve_All.csv')
 
+wfo_taxonomy <- read_tsv_arrow("/Users/henryfrye/Dropbox/Intellectual_Endeavours/Wisconsin/ArboretumPhyloPheno/LngArbCode/PhylogeneticCode/classification_v.2023.12.csv")
+
 # Check lab traits ####
 
 # check the species differences with the manning and goldblatt text
@@ -79,7 +81,7 @@ sp_id_misalign_vnir <- vnirspec %>% dplyr::filter(! finalname %in% gm_taxa$Taxon
 length(unique((sp_id_misalign_field$finalname))) # great 0 as well!
 
 # WFO taxa match for lab traits ####
-wfo_taxonomy <- read_tsv_arrow("/Users/henryfrye/Dropbox/Intellectual_Endeavours/Wisconsin/ArboretumPhyloPheno/LngArbCode/PhylogeneticCode/classification_v.2023.12.csv")
+
 
 # Check names of arboretum against World Flora
 NameCheck <- WFO.match(spec.data = labtrait, WFO.data= wfo_taxonomy, spec.name = "finalname",
@@ -132,7 +134,7 @@ NameCheck_mini_simple_spec <- NameCheck_sel_spec %>% distinct()
 spectrait_wfo <- left_join(spectrait, NameCheck_mini_simple_spec, by = c('species' = 'species.ORIG'))
 
 spectrait_taxa_cleaned <- spectrait_wfo %>% rename('ScientificName_WFO' = scientificName, 'Family_WFO' = family) %>% 
-  dplyr::select(species:family_POSA, ScientificName_WFO, scientificNameAuthorship, Family_WFO, perennial:functional_twig)
+  dplyr::select(species:family_POSA, ScientificName_WFO, scientificNameAuthorship, Family_WFO, perennial:dispersal)
 
 
 spectrait_taxa_cleaned <-  spectrait_taxa_cleaned %>% mutate(family_GM = str_to_title(family_GM),
