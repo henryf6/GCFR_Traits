@@ -212,15 +212,75 @@ spectrait_polished <- spectrait_polished %>% mutate(
                          leaf_type == 'microphylls' ~ 'microphyll',
                                TRUE ~ leaf_type))
 
+# convert family MG to sentence case
+spectrait_polished$family_MG <- str_to_title(spectrait_polished$family_MG)
+
 # remove functional twig column as this was a project specific designation
 # and not for general use
 spectrait_polished <- spectrait_polished %>% dplyr::select(!functional_twig)
 which(spectrait_polished  %>% duplicated() == TRUE)
+
 # write out polished file
 write.csv(spectrait_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Species_Traits_Final.csv',
           row.names= FALSE)
 
 # Clean up columns for vnir spectroscopy #####
+
+
+vnirspec_polished <- vnirspec %>% rename('unique_ID' = 'NewUID', # ID system is no longer "new"
+                                             'scientific_name_original' = 'finalname', # original designation
+                                             'family_MG' = 'FamilyManningGoldblatt', # match the order of the flora citation
+                                             'scientific_name_WFO' = 'ScientificName_WFO', # match other column name format
+                                             'scientific_name_authorship' = 'scientificNameAuthorship',
+                                             'family_WFO' = 'Family_WFO',
+                                             'subregion' = 'Subregion',
+                                              'latitude' = 'Latitude',
+                                         'longitude' = 'Longitude',
+                                         'sample' = 'Sample',
+                                         'date' = 'DateMonthDay') # match manuscript descriptions
+
+# No need to include the split the genus and species info or subregion abbreviation, redundant information used for the EcoSis submission
+vnirspec_polished <- vnirspec_polished %>% dplyr::select(!Genus) %>% 
+  dplyr::select(!Species) %>%
+  dplyr::select(!SubregAbbr)
+
+
+# convert family from all caps to sentence case (do this for species traits)
+vnirspec_polished$family_MG <- str_to_title(vnirspec_polished$family_MG)
+
+# convert subregion to lower
+vnirspec_polished$subregion <- str_to_lower(vnirspec_polished$subregion)
+
+# fix the baviaanskloof misspeling in subregion
+vnirspec_polished <- vnirspec_polished %>% mutate(subregion = case_when(
+  subregion == 'baviaanksloof' ~ 'baviaanskloof',
+  TRUE ~ subregion
+  
+))
+
+
+# Create year of measurement column (based on this file: /Users/henryfrye/Dropbox/Intellectual_Endeavours/UConn/Research/ZA_Dimensions_Data/data_base/Spec_Trait_All.csv)
+vnirspec_polished <- vnirspec_polished %>% mutate(year = case_when(
+  subregion == 'baviaanskloof' ~ 2011,
+  subregion == 'htr' ~ 2014,
+  subregion == 'hangklip' ~ 2012,
+  subregion == 'langeberg' ~ 2012,
+  subregion == 'cederberg' ~ 2012,
+  subregion == 'cape point' ~ 2010
+))
+
+
+# Format and convert dates
+vnirspec_dates_str <- sprintf("%04d", vnirspec_polished$date)
+month <- substr(vnirspec_dates_str, 1, 2)
+day <- substr(vnirspec_dates_str, 3, 4)
+full_dates_vnir <- paste(vnirspec_polished$year,month, day, sep = "-")
+vnirspec_polished$date <- as.Date(full_dates_vnir)
+
+# write out polished file
+write.csv(vnirspec_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/VNIR_Spectra_Final.csv',
+          row.names= FALSE)
+
 
 # Clean up columns for releve data #####
 
@@ -355,14 +415,18 @@ write.csv(spectrait_dict, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_dict
           row.names = FALSE)
 
 
-
-
-
-### ERROR in step 2 cut columns off, needs to be re-run!!!! ####
-
-
-
-
 # Data dictionary create for vnir spectroscopy ####
+vnirspec_dict <- create_data_dictionary(vnirspec_polished)
+
+write.csv(vnirspec_dict, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_dictionaries/vnir_spec_dictionary_raw.csv',
+          row.names = FALSE)
+
+
+# Minimum reflectance value
+min(vnirspec[,15:514])
+
+# Maximum value
+max(vnirspec[,15:514])
 
 # Data dictionary create for releve data ####
+

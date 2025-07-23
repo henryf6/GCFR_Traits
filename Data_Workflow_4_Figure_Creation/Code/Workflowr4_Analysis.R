@@ -18,6 +18,7 @@ library(forcats)
 field <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Field_Traits_Final.csv')
 lab <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Lab_Traits_Final.csv') 
 spectrait <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Species_Traits_Final.csv')
+vnir <- read.csv('/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/VNIR_Spectra_Final.csv')
 
 # create figure path
 figpath<- 'GCFR_Traits/Data_Workflow_4_Figure_Creation/Figures/'
@@ -376,4 +377,94 @@ ggsave(
   width = 14, height = 10, dpi = 300, units = "in",
   bg = 'white'
 )
+
+# Figures for vnir spectroscopy data ####
+
+# Make figures showing median value with IQR range and CV line
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(patchwork)
+
+# Pivot the data to long format
+vnir_long <- vnir %>%
+  pivot_longer(cols = starts_with("X"),
+               names_to = "wavelength",
+               names_prefix = "X",
+               names_transform = list(wavelength = as.integer),
+               values_to = "reflectance")
+
+# Summarize for median and IQR
+summary_stats <- vnir_long %>%
+  group_by(wavelength) %>%
+  summarise(
+    median = median(reflectance, na.rm = TRUE),
+    q25 = quantile(reflectance, 0.25, na.rm = TRUE),
+    q75 = quantile(reflectance, 0.75, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Plot 1: Median with IQR ribbon
+p1 <- ggplot(summary_stats, aes(x = wavelength)) +
+  geom_ribbon(aes(ymin = q25, ymax = q75), fill = "gray80", alpha = 0.5) +
+  geom_line(aes(y = median), color = "blue", size = 1.75) +
+  labs(title = "Median Reflectance with IQR",
+       x = "Wavelength (nm)",
+       y = "Reflectance (%)") +
+  theme_minimal()
+
+# Calculate Coefficient of Variation (CV)
+cv_stats <- vnir_long %>%
+  group_by(wavelength) %>%
+  summarise(
+    mean = mean(reflectance, na.rm = TRUE),
+    sd = sd(reflectance, na.rm = TRUE),
+    cv = sd / mean,
+    .groups = "drop"
+  )
+
+# Plot 2: Coefficient of Variation
+p2 <- ggplot(cv_stats, aes(x = wavelength, y = cv)) +
+  geom_line(color = "darkorange", size = 1.75) +
+  labs(title = "Coefficient of Variation by Wavelength",
+       x = "Wavelength (nm)",
+       y = "CV") +
+  theme_minimal()
+
+# Grouped median reflectance by subregion
+grouped_median <- vnir_long %>%
+  group_by(subregion, wavelength) %>%
+  summarise(median = median(reflectance, na.rm = TRUE), .groups = "drop")
+
+# Plot 3: Median reflectance by subregion
+library(RColorBrewer)
+
+# Plot 3: Median reflectance by subregion with Dark2 palette and internal legend
+p3 <- ggplot(grouped_median, aes(x = wavelength, y = median, color = subregion)) +
+  geom_line(size = 1.75) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(title = "Median Reflectance by Subregion",
+       x = "Wavelength (nm)",
+       y = "Reflectance (%)",
+       color = "Subregion") +
+  theme_minimal() +
+  theme(legend.position = 'bottom',  # Adjust position as needed
+        legend.background = element_rect(fill = "white", color = "gray80"),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 9)) +
+  guides(fill = guide_legend(nrow = 2, byrow = TRUE))
+  
+
+# Combine plots: p1 and p2 stacked, p3 to the right
+combined_spec <- (p1 / p2) | p3
+print(combined_spec)
+
+ggsave(
+  filename = paste0(figpath, 'vnir_spec_sumary.tiff'),
+  plot = combined_spec,
+  width = 14, height = 10, dpi = 300, units = "in",
+  bg = 'white'
+)
+
+
 
