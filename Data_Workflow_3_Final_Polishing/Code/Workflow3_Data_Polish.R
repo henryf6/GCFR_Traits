@@ -19,6 +19,9 @@ spectrait <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outpu
 vnirspec <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/vnir_taxa_clean.csv')
 releve <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/releve_taxa_clean.csv')
 
+# read in MG classification for a quick fix on releve data
+taxa <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/GMTaxonomy.csv')
+
 # Clean up columns for field traits #####
 
 fieldtrait_polished <- fieldtrait %>% rename('unique_ID' = 'NewUID', # ID system is no longer "new"
@@ -284,6 +287,26 @@ write.csv(vnirspec_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/D
 
 # Clean up columns for releve data #####
 
+releve_polished <- releve %>% rename('scientific_name_original' = 'Species', # original designation
+                                         'family_MG' = 'Family', # match the order of the flora citation
+                                         'scientific_name_WFO' = 'ScientificName_WFO', # match other column name format
+                                         'scientific_name_authorship' = 'scientificNameAuthorship',
+                                         'family_WFO' = 'Family_WFO',
+                                         'plot' = 'Plot',
+                                         'year' = 'Year',
+                                         'subregion' = 'Site',
+                                         'percent_cover' = 'PercCover',
+                                         'abundance_class' = 'AbundClass',
+                                         'plot_percent_cover' = 'PlotPercCov',
+                                         'relative_percent_cover' = 'RelPercCover')
+
+# remove family MG column, does not have a proper join and can be removed since WFO information is largely redunant
+releve_polished <- releve_polished %>% select(!family_MG)
+
+
+
+# can we pull in geospatial data for each plot?
+
 # Create data dictionary function ####
 
 create_data_dictionary <- function(df) {
@@ -430,3 +453,9 @@ max(vnirspec[,15:514])
 
 # Data dictionary create for releve data ####
 
+releve_dict <- create_data_dictionary(releve_polished)
+
+View(releve_dict)
+
+write.csv(releve_dict, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_dictionaries/releve_dictionary_raw.csv',
+          row.names = FALSE)
