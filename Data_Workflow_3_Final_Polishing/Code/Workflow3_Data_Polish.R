@@ -303,6 +303,55 @@ releve_polished <- releve %>% rename('scientific_name_original' = 'Species', # o
 # remove family MG column, does not have a proper join and can be removed since WFO information is largely redunant
 releve_polished <- releve_polished %>% select(!family_MG)
 
+# convert 1966/1996 Cape to perc cover, 1978 hangklip/ 1993 Langeberg/ Cederberg convert 
+# back to original abundance class for copmletion,
+older_subregions <- c('langeberg', 'cederberg', 'hangklip')
+htr_cover_class_year <- c('2004','2013') # the 2014 htr plots were done on percent cover scale
+old_cape_year <- c('1966', '1996')
+
+releve_polished <- releve_polished %>% mutate(abundance_class = case_when(
+  subregion %in% older_subregions & percent_cover == .1 ~ 0,
+  subregion %in% older_subregions & percent_cover == 2.5 ~ 1,
+  subregion %in% older_subregions & percent_cover == 15 ~ 2,
+  subregion %in% older_subregions & percent_cover == 37.5 ~ 3,
+  subregion %in% older_subregions & percent_cover == 62.5 ~ 4,
+  subregion %in% older_subregions & percent_cover == 87.5 ~ 5,
+  subregion == 'htr' & year %in% htr_cover_class_year & percent_cover == .1 ~ 0,
+  subregion == 'htr' & year %in% htr_cover_class_year & percent_cover == 2.5 ~ 1,
+  subregion == 'htr' & year %in% htr_cover_class_year & percent_cover > 5 & percent_cover < 25 ~ 2,
+  subregion == 'htr' & year %in% htr_cover_class_year & percent_cover == 37.5 ~ 3,
+  subregion == 'htr' & year %in% htr_cover_class_year & percent_cover == 62.5 ~ 4,
+  subregion == 'htr' & year %in% htr_cover_class_year & percent_cover == 87.5 ~ 5,
+  TRUE ~ abundance_class
+)) %>% mutate(percent_cover = case_when(
+  subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 0 ~ .1,
+  subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 1 ~ 2.5,
+  subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 2 ~ 15,
+  subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 3 ~ 37.5,
+  subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 4 ~ 62.5,
+  subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 5 ~ 87.5,
+  TRUE ~ percent_cover
+))
+
+# add in missing relative covers
+releve_polished <- releve_polished %>%
+  group_by(plot,year) %>%
+  mutate(plot_percent_cover = if_else(
+    is.na(plot_percent_cover),
+    sum(percent_cover, na.rm = TRUE),
+    plot_percent_cover
+  )) %>%
+  mutate(relative_percent_cover = if_else(
+    is.na(relative_percent_cover),
+    percent_cover/plot_percent_cover,
+    relative_percent_cover
+  ))
+  ungroup()
+
+
+# write out polished file
+write.csv(releve_polished, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Releve_Final.csv',
+          row.names= FALSE)
 
 
 # can we pull in geospatial data for each plot?
@@ -437,6 +486,22 @@ spectrait_dict <- create_data_dictionary(spectrait_polished)
 write.csv(spectrait_dict, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_dictionaries/species_trait_dictionary_raw.csv',
           row.names = FALSE)
 
+# which missing for lifecycle POSA
+missinglife <- spectrait_polished[which(is.na(spectrait_polished$lifecycle_POSA) == TRUE),]
+sort(table(missinglife$family_WFO))
+
+# which missing for flowering
+missing_flower_begin <- spectrait_polished[which(is.na(spectrait_polished$flower_begin) == TRUE),]
+sort(table(missing_flower_begin$family_WFO))
+
+# which missing for flowering
+missing_flower_end <- spectrait_polished[which(is.na(spectrait_polished$flower_end) == TRUE),]
+sort(table(missing_flower_end$family_WFO))
+
+# which missing for leaf length
+missing_length <- spectrait_polished[which(is.na(spectrait_polished$leaf_length) == TRUE),]
+sort(table(missing_length$family_WFO))
+
 
 # Data dictionary create for vnir spectroscopy ####
 vnirspec_dict <- create_data_dictionary(vnirspec_polished)
@@ -451,6 +516,18 @@ min(vnirspec[,15:514])
 # Maximum value
 max(vnirspec[,15:514])
 
+# number of measurements
+length(unique(vnirspec_polished$unique_ID))
+
+# number of species
+length(unique(vnirspec_polished$scientific_name_WFO))
+
+# what is the most measured species
+sort(table(vnirspec_polished$scientific_name_WFO),decreasing = TRUE)[1:10]
+
+# breakdown of species replicates
+table(table(vnirspec_polished$scientific_name_WFO))
+
 # Data dictionary create for releve data ####
 
 releve_dict <- create_data_dictionary(releve_polished)
@@ -459,3 +536,6 @@ View(releve_dict)
 
 write.csv(releve_dict, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_dictionaries/releve_dictionary_raw.csv',
           row.names = FALSE)
+
+
+

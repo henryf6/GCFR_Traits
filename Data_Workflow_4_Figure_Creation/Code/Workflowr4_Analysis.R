@@ -12,13 +12,15 @@
 library(tidyverse)
 library(ggpubr)
 library(RColorBrewer)
+library(patchwork)
 library(forcats)
 
 # Read in data
 field <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Field_Traits_Final.csv')
 lab <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Lab_Traits_Final.csv') 
-spectrait <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Species_Traits_Final.csv')
 vnir <- read.csv('/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/VNIR_Spectra_Final.csv')
+releve <- read.csv('/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Releve_Final.csv')
+
 
 # create figure path
 figpath<- 'GCFR_Traits/Data_Workflow_4_Figure_Creation/Figures/'
@@ -380,11 +382,6 @@ ggsave(
 
 # Figures for vnir spectroscopy data ####
 
-# Make figures showing median value with IQR range and CV line
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(patchwork)
 
 # Pivot the data to long format
 vnir_long <- vnir %>%
@@ -467,4 +464,68 @@ ggsave(
 )
 
 
+# releve summary figure, compute species richness by year and subregion
+View(releve)
+
+# compute species richness
+
+
+# Step 1: Compute species richness per plot per year
+richness <- releve %>%
+  group_by(plot, year) %>%
+  summarise(species_richness = n_distinct(scientific_name_original), .groups = "drop")
+
+richness <- richness %>%
+  left_join(releve %>% select(plot, subregion) %>% distinct(), by = "plot")
+
+# Summarize by subregion and year
+summary <- richness %>%
+  group_by(subregion, year) %>%
+  summarise(
+    median_richness = median(species_richness),
+    lower_iqr = quantile(species_richness, 0.25),
+    upper_iqr = quantile(species_richness, 0.75),
+    .groups = "drop"
+  )
+
+
+# Create a combined factor for subregion and year
+
+
+
+summary <- summary %>%
+  mutate(subregion = str_replace(subregion, "_", " ")) %>%
+  mutate(subregion = str_to_title(subregion)) %>%
+   mutate(subregion = case_when(subregion == 'Htr' ~ 'HTR',
+                                TRUE ~ subregion)) %>%
+  mutate(
+    year = factor(year, levels = sort(unique(year))),
+    subregion_year = interaction(subregion, year, sep = " ")
+  ) %>%
+  mutate(
+    subregion_year = factor(subregion_year, levels = unique(subregion_year))
+  )
+
+
+# Plot with subregion-year on x-axis
+sp_rich_plot <- ggplot(summary, aes(x = subregion_year, y = median_richness)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_errorbar(
+    aes(ymin = lower_iqr, ymax = upper_iqr),
+    width = 0.2
+  ) +
+  labs(
+    x = "Subregion and Year",
+    y = "Median Species Richness"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+sp_rich_plot
+
+ggsave(
+  filename = paste0(figpath, 'releve_sumary.tiff'),
+  plot = sp_rich_plot,
+  width = 8, height = 6, dpi = 300, units = "in",
+  bg = 'white'
+)
 
