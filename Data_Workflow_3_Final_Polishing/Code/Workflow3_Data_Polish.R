@@ -21,6 +21,7 @@ releve <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/
 
 # read in MG classification for a quick fix on releve data
 taxa <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/GMTaxonomy.csv')
+comm_loc <- read.csv('GCFR_Traits/Spatial_Data/Comm_Plot_Lat_Lon_Coords.csv')
 
 # Clean up columns for field traits #####
 
@@ -345,8 +346,21 @@ releve_polished <- releve_polished %>%
     is.na(relative_percent_cover),
     percent_cover/plot_percent_cover,
     relative_percent_cover
-  ))
+  )) %>%
   ungroup()
+  
+# join in lat/long data
+comm_loc_join <- comm_loc %>% unite(plot, Site, PLOT, sep = "_" )
+
+# Remove suffixes like "_a", "_b" from plot values
+releve_polished$plot_clean <- gsub("(_[a-z])$", "", releve_polished$plot)
+
+# Then join using the cleaned column
+releve_polished <- left_join(releve_polished, comm_loc_join, by = c("plot_clean" = "plot")) %>%
+  select(!plot_clean) %>%
+  rename('latitude' = 'Latitude',
+         'longitude' = 'Longitude') %>%
+  select(scientific_name_original:subregion, latitude, longitude, percent_cover:plot_percent_cover)
 
 
 # write out polished file
@@ -536,6 +550,3 @@ View(releve_dict)
 
 write.csv(releve_dict, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_dictionaries/releve_dictionary_raw.csv',
           row.names = FALSE)
-
-
-

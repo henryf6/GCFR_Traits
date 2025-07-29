@@ -6,7 +6,8 @@
 "plot",NA,"character","BK_1 - LB2_99",NA,0
 "year",NA,"integer","1966 - 2014",NA,0
 "subregion",NA,"character","baviaanskloof - langeberg",NA,0
-"percent_cover",NA,"numeric","0 - 87.5",NA,6048
-"abundance_class",NA,"integer","0 - 5",NA,32247
-"plot_percent_cover",NA,"numeric","0.1 - 585",NA,6048
-"relative_percent_cover",NA,"numeric","0 - 1",NA,6048
+"latitude",NA,"numeric","-34.4 - -30.3925",NA,1566
+"longitude",NA,"numeric","18.374421 - 24.4833",NA,1566
+"percent_cover",NA,"numeric","0 - 87.5",NA,0
+"abundance_class",NA,"numeric","0 - 5",NA,10670
+"plot_percent_cover",NA,"numeric","0.1 - 1880",NA,0
