@@ -24,7 +24,7 @@
 "twig_fresh_g",NA,"numeric","0.002 - 103.784",NA,2289
 "twig_dry_g",NA,"numeric","7e-04 - 10.673",NA,2374
 "lma",NA,"numeric","0.001346154 - 0.465408805",NA,303
-"fwc",NA,"numeric","0.11234347 - 84.91666667",NA,529
+"lwc",NA,"numeric","0.11234347 - 84.91666667",NA,529
 "succulence",NA,"numeric","0 - 2.829953125",NA,508
 "ldmc",NA,"numeric","0.011639185 - 1",NA,507
 "lwr",NA,"numeric","0.211111111 - 3086.666667",NA,40

@@ -32,7 +32,8 @@ fieldtrait_polished <- fieldtrait %>% rename('unique_ID' = 'NewUID', # ID system
                                              'scientific_name_WFO' = 'ScientificName_WFO', # match other column name format
                                              'scientific_name_authorship' = 'scientificNameAuthorship',
                                              'family_WFO' = 'Family_WFO',
-                                             'subregion' = 'region') # match manuscript descriptions
+                                             'subregion' = 'region',
+                                             'canopy_cover_cm2' = 'canopy_area_cm2') # match manuscript descriptions
                                              
 # Create year of measurement column (based on this file: /Users/henryfrye/Dropbox/Intellectual_Endeavours/UConn/Research/ZA_Dimensions_Data/data_base/Spec_Trait_All.csv)
 fieldtrait_polished <- fieldtrait_polished %>% mutate(year = case_when(
@@ -87,7 +88,8 @@ labtrait_polished <- labtrait %>% rename('unique_ID' = 'NewUID', # ID system is 
                                              'scientific_name_WFO' = 'ScientificName_WFO', # match other column name format
                                              'scientific_name_authorship' = 'scientificNameAuthorship',
                                              'family_WFO' = 'Family_WFO',
-                                             'subregion' = 'region') # match manuscript descriptions
+                                             'subregion' = 'region',
+                                              'lwc' = 'fwc') # match manuscript descriptions
 
 # Create year of measurement column (based on this file: /Users/henryfrye/Dropbox/Intellectual_Endeavours/UConn/Research/ZA_Dimensions_Data/data_base/Spec_Trait_All.csv)
 labtrait_polished <- labtrait_polished %>% mutate(year = case_when(

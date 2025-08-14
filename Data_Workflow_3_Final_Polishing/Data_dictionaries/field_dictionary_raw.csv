@@ -15,7 +15,7 @@
 "height_cm",NA,"numeric","0 - 2500",NA,0
 "canopy_axis_1_cm",NA,"numeric","1 - 1400",NA,0
 "canopy_axis_2_cm",NA,"numeric","0.5 - 1300",NA,0
-"canopy_area_cm2",NA,"numeric","0.392699082 - 1429424.657",NA,0
+"canopy_cover_cm2",NA,"numeric","0.392699082 - 1429424.657",NA,0
 "branch_order",NA,"integer","0 - 4",NA,14
 "pubescence",NA,"character","B - S",NA,531
 "percent_N",NA,"numeric","0.2 - 4.837029217",NA,119

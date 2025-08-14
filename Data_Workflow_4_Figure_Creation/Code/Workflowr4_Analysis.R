@@ -14,13 +14,14 @@ library(ggpubr)
 library(RColorBrewer)
 library(patchwork)
 library(forcats)
+library(sf)
 
 # Read in data
 field <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Field_Traits_Final.csv')
 lab <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Lab_Traits_Final.csv') 
-vnir <- read.csv('/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/VNIR_Spectra_Final.csv')
-releve <- read.csv('/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Releve_Final.csv')
-
+vnir <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/VNIR_Spectra_Final.csv')
+releve <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Releve_Final.csv')
+spectrait <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Species_Traits_Final.csv')
 
 # create figure path
 figpath<- 'GCFR_Traits/Data_Workflow_4_Figure_Creation/Figures/'
@@ -72,7 +73,7 @@ C_iso <- ggplot(field, aes(x = d_13C_12C, color = Subregion)) + geom_density(lin
 
 C_iso
 
-combined_foliar_chem <-ggarrange(N_plot, C_plot, N_iso, C_iso, ncol = 2, nrow = 2,
+combined_foliar_chem <-ggarrange(N_plot, C_plot, N_iso, C_iso, labels = c('A','B','C','D'), ncol = 2, nrow = 2,
           common.legend = TRUE,
           legend = "right"
 ) + theme(text = element_text(size = 12, family = "Arial"))
@@ -80,7 +81,8 @@ combined_foliar_chem
 
 ggsave(filename = paste0(figpath, 'foliar_summary_plot.tiff'), plot = combined_foliar_chem, width = 8, dpi = 300, units = "in",
        bg= 'white')
-
+ggsave(filename = paste0(figpath, 'foliar_summary_plot.jpeg'), plot = combined_foliar_chem, width = 8, dpi = 300, units = "in",
+       bg= 'white')
 # Figures for lab data ####
 
 # re-level the subregion categories for nice display
@@ -98,7 +100,7 @@ lma <- ggplot(lab, aes(x = lma, color = Subregion)) + geom_density(linewidth = 1
 lma
 
 # leaf water content
-lwc <- ggplot(lab, aes(x = fwc, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
+lwc <- ggplot(lab, aes(x = lwc, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
   xlab('Leaf water content') + 
   scale_color_brewer(palette = "Dark2") +
   xlim(0,20) +
@@ -123,12 +125,15 @@ lwr
 
 
 combined_foliar_struct <-ggarrange(lma, lwc, thick, lwr, ncol = 2, nrow = 2,
+                                   labels = c('A','B','C', 'D'),
                                  common.legend = TRUE,
                                  legend = "right"
 ) + theme(text = element_text(size = 12, family = "Arial"))
 combined_foliar_struct
 
 ggsave(filename = paste0(figpath, 'foliar_summary_plot_struct.tiff'), plot = combined_foliar_struct, width = 8, dpi = 300, units = "in",
+       bg= 'white')
+ggsave(filename = paste0(figpath, 'foliar_summary_plot_struct.jpeg'), plot = combined_foliar_struct, width = 8, dpi = 300, units = "in",
        bg= 'white')
 
 # An alternative visualization
@@ -241,8 +246,6 @@ month_poll_counts <- expanded_filtered %>%
   mutate(
     month_label = factor(month.abb[months], levels = month.abb)
   )
-
-library(ggplot2)
 
 flower_phen <- ggplot(month_poll_counts,
        aes(x = month_label, y = n, fill = pollinator)) +
@@ -371,8 +374,8 @@ combined_test <- (growth_form_plot + leaf_form_plot) / (flam_disp + flower_phen)
   #plot_layout(guides = 'collect') &
   theme(text = element_text(size = 12, family = "Arial"))
 
+combined_test <- combined_test + plot_annotation(tag_levels = 'A')
 combined_test
-
 ggsave(
   filename = paste0(figpath, 'species_all_summary_plot.tiff'),
   plot = combined_test,
@@ -380,7 +383,14 @@ ggsave(
   bg = 'white'
 )
 
-# Figures for vnir spectroscopy data ####
+ggsave(
+  filename = paste0(figpath, 'species_all_summary_plot.jpeg'),
+  plot = combined_test,
+  width = 14, height = 10, dpi = 300, units = "in",
+  bg = 'white'
+)
+
+# Figures for vnir spectroscopy data #####
 
 
 # Pivot the data to long format
@@ -405,7 +415,7 @@ summary_stats <- vnir_long %>%
 p1 <- ggplot(summary_stats, aes(x = wavelength)) +
   geom_ribbon(aes(ymin = q25, ymax = q75), fill = "gray80", alpha = 0.5) +
   geom_line(aes(y = median), color = "blue", size = 1.75) +
-  labs(title = "Median Reflectance with IQR",
+  labs(#title = "Median Reflectance with IQR",
        x = "Wavelength (nm)",
        y = "Reflectance (%)") +
   theme_minimal()
@@ -423,7 +433,7 @@ cv_stats <- vnir_long %>%
 # Plot 2: Coefficient of Variation
 p2 <- ggplot(cv_stats, aes(x = wavelength, y = cv)) +
   geom_line(color = "darkorange", size = 1.75) +
-  labs(title = "Coefficient of Variation by Wavelength",
+  labs(#title = "Coefficient of Variation by Wavelength",
        x = "Wavelength (nm)",
        y = "CV") +
   theme_minimal()
@@ -440,7 +450,7 @@ library(RColorBrewer)
 p3 <- ggplot(grouped_median, aes(x = wavelength, y = median, color = subregion)) +
   geom_line(size = 1.75) +
   scale_color_brewer(palette = "Dark2") +
-  labs(title = "Median Reflectance by Subregion",
+  labs(#title = "Median Reflectance by Subregion",
        x = "Wavelength (nm)",
        y = "Reflectance (%)",
        color = "Subregion") +
@@ -454,8 +464,8 @@ p3 <- ggplot(grouped_median, aes(x = wavelength, y = median, color = subregion))
 
 # Combine plots: p1 and p2 stacked, p3 to the right
 combined_spec <- (p1 / p2) | p3
-print(combined_spec)
-
+combined_spec <- combined_spec + plot_annotation(tag_levels = 'A')
+print(combined_spec) 
 ggsave(
   filename = paste0(figpath, 'vnir_spec_sumary.tiff'),
   plot = combined_spec,
@@ -463,20 +473,25 @@ ggsave(
   bg = 'white'
 )
 
+ggsave(
+  filename = paste0(figpath, 'vnir_spec_sumary.jpeg'),
+  plot = combined_spec,
+  width = 14, height = 10, dpi = 300, units = "in",
+  bg = 'white'
+)
 
-# releve summary figure, compute species richness by year and subregion
-View(releve)
 
-# compute species richness
+# releve summary figure, compute species richness by year and subregion ####
 
 
-# Step 1: Compute species richness per plot per year
+# Compute species richness per plot per year
 richness <- releve %>%
   group_by(plot, year) %>%
   summarise(species_richness = n_distinct(scientific_name_original), .groups = "drop")
 
 richness <- richness %>%
   left_join(releve %>% select(plot, subregion) %>% distinct(), by = "plot")
+
 
 # Summarize by subregion and year
 summary <- richness %>%
@@ -528,4 +543,122 @@ ggsave(
   width = 8, height = 6, dpi = 300, units = "in",
   bg = 'white'
 )
+
+# write out releve richness layer
+richness_gis <- richness %>%
+  left_join(releve %>% select(plot, latitude, longitude) %>% distinct(), by = "plot") 
+
+# remove missing lat/longs (1966 Cape Point)
+releve_sf <- st_as_sf(richness_gis %>% na.omit(latitude) , coords = c("longitude", "latitude"), crs = 4326)
+
+# choose only most recent surveys for the repeated surveys
+non_temp_rep_subs <- c('htr', 'hangklip','langeberg', 'cederberg')
+releve_sf_output <- releve_sf %>% dplyr::filter(subregion %in% non_temp_rep_subs | subregion == 'cape_point' & year == '2010' |
+                                                  subregion == 'baviaanskloof' & year == '2011')
+
+write_sf(releve_sf_output, 'GCFR_Traits/Spatial_Data/sp_rich_releve.geojson', delete_dsn = TRUE )
+
+
+# summary numbers #####
+
+# Describe the number of structural leaf and twig traits measured 
+colnames(lab)
+
+labflat <- purrr::flatten_dbl(lab[,16:30])
+missinglab <- which(is.na(labflat) == TRUE)
+
+labtraitobs <- labflat[-missinglab]
+
+# include pubescence category from field traits
+pub_complete <- field$pubescence %>% na.omit()
+
+# number of measured and derived structural
+print(length(labtraitobs) + length(pub_complete))
+
+# number of unique species from lab traits
+length(unique(lab$scientific_name_WFO))
+
+# number of unique families from lab traits
+length(unique(lab$family_WFO))
+
+# number of average replicates and s.d./range
+lab_count <- lab %>% group_by(scientific_name_WFO, subregion) %>%
+  summarise(SampleCounts = n()) %>% ungroup()
+
+# check variation by region
+lab_count %>% group_by(subregion)   %>% summarise(mean = mean(SampleCounts))
+
+# overall summaries
+median(lab_count$SampleCounts)
+mean(lab_count$SampleCounts)
+sd(lab_count$SampleCounts)
+range(lab_count$SampleCounts)
+
+#### Describe the number of canopy structural traits measured ####
+colnames(field)
+
+fieldcanopyflat <- purrr::flatten_dbl(field[,c(14,17,18)])
+missingcanopyflat <- which(is.na(fieldcanopyflat) == TRUE)
+
+fieldcanopytraitobs <- fieldcanopyflat[-missingcanopyflat]
+
+print(length(fieldcanopytraitobs))
+
+# number of average replicates and s.d./rangef
+field_count <- field %>% group_by(scientific_name_WFO, subregion) %>%
+  summarise(SampleCounts = n()) %>% ungroup()
+
+# check variation by region
+field_count %>% group_by(subregion)   %>% summarise(mean = mean(SampleCounts))
+
+# overall summaries
+median(field_count$SampleCounts)
+mean(field_count$SampleCounts)
+sd(field_count$SampleCounts)
+range(field_count$SampleCounts)
+
+#### Describe the number of elemental/isotope traits measured ####
+fieldelemflat <- purrr::flatten_dbl(field[,20:24])
+missingelemflat <- which(is.na(fieldelemflat) == TRUE)
+
+fieldelemtraitobs <- fieldelemflat[-missingelemflat]
+
+print(length(fieldelemtraitobs))
+
+# number of species
+length(unique(field$scientific_name_WFO))
+
+# number of families
+length(unique(field$family_WFO))
+
+
+#### Describe the number of spectral measurements measured ####
+# number of measurements
+dim(vnir)[1]
+
+# number of unique species
+length(unique(vnir$scientific_name_WFO))
+
+# number of unique families 
+length(unique(vnir$family_WFO))
+
+
+# number of average replicates and s.d./rangef
+spec_count <- vnir %>% group_by(scientific_name_WFO, subregion) %>%
+  summarise(SampleCounts = n()) %>% ungroup()
+
+# check variation by region
+spec_count %>% group_by(subregion)   %>% summarise(mean = mean(SampleCounts))
+
+# overall summaries
+median(spec_count$SampleCounts)
+mean(spec_count$SampleCounts)
+sd(spec_count$SampleCounts)
+range(spec_count$SampleCounts)
+
+spec_count_rep <- vnir %>% group_by(unique_ID, subregion) %>%
+  summarise(SampleCounts = n()) %>% ungroup()
+
+mean(spec_count_rep$SampleCounts)
+
 

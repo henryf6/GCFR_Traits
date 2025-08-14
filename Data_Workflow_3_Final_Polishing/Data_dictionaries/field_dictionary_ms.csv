@@ -15,7 +15,7 @@ sample,Sample number of individual collected,integer,Jan-94,NA,0
 height_cm,Vegetation height,numeric,0 - 2500,cm,0
 canopy_axis_1_cm,Length of canopy axis 1,numeric,1 - 1400,cm,0
 canopy_axis_2_cm,Length of canopy axis 2,numeric,0.5 - 1300,cm,0
-canopy_area_cm2,Canopy area calculation,numeric,0.392699082 - 1429424.657,cm2,0
+canopy_cover_cm2,Canopy area calculation,numeric,0.392699082 - 1429424.657,cm2,0
 branch_order,"Ordinal measure (0 to 4) of branch order, a measure of complexity of branching, with higher values representing greater complexity",integer,0 - 4,NA,14
 pubescence,"Categorical value indicating presence of pubescence (hair) on leaves (l), stems (s), both leaves and stems (b), or neither (n). NA indicates lack of measurement, not necessarily lack of pubescence.",character,B - S,NA,531
 percent_N, d,numeric,0.2 - 4.837029217,%,119
