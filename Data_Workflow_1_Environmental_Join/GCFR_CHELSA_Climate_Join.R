@@ -42,7 +42,7 @@ for (i in 1:length(tiff_files)) {
   point_data <- st_transform(point_file, crs(raster_data))
   
   # Extract values for each point from the GeoTIFF file
-  values <- extract(raster_data, point_data)
+  values <- raster::extract(raster_data, point_data)
   
   # Check if any points fall outside the extent of the GeoTIFF
   valid_points <- !is.na(values)
@@ -74,8 +74,8 @@ which(is.na(merged_data$bio12) == TRUE)
 
 # Convert MAT and MAP to original units
 
-# MAT has a scale factor of 0.1 and offset of -237.15 (see CHELSA documentation)
-merged_data$MAT <- (merged_data$bio1 *.1) - 237.15
+# MAT has a scale factor of 0.1 and offset of -273.15 (see CHELSA documentation)
+merged_data$MAT <- (merged_data$bio1 *.1) - 273.15
  
 # MAP has a scale factor 0.1 and is measured in kg m^-2 per year and convert it to
 # mm per year (see CHELSA documentation)
