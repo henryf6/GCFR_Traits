@@ -257,7 +257,7 @@ vnirspec_polished$family_MG <- str_to_title(vnirspec_polished$family_MG)
 # convert subregion to lower
 vnirspec_polished$subregion <- str_to_lower(vnirspec_polished$subregion)
 
-# fix the baviaanskloof misspeling in subregion
+# fix the baviaanskloof misspelling in subregion
 vnirspec_polished <- vnirspec_polished %>% mutate(subregion = case_when(
   subregion == 'baviaanksloof' ~ 'baviaanskloof',
   TRUE ~ subregion

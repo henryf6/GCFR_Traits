@@ -17,11 +17,11 @@ library(forcats)
 library(sf)
 
 # Read in data
-field <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Field_Traits_Final.csv')
-lab <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Lab_Traits_Final.csv') 
-vnir <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/VNIR_Spectra_Final.csv')
-releve <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Releve_Final.csv')
-spectrait <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Species_Traits_Final.csv')
+field <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Leaf_Struct_Water_Traits.csv')
+lab <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Canopy_Leaf_Chemistry.csv') 
+vnir <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/VNIR_Spectra.csv')
+releve <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Releve.csv')
+spectrait <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Species_Traits.csv')
 
 # create figure path
 figpath<- 'GCFR_Traits/Data_Workflow_4_Figure_Creation/Figures/'
@@ -29,10 +29,11 @@ figpath<- 'GCFR_Traits/Data_Workflow_4_Figure_Creation/Figures/'
 # Figures for field data ####
 
 # re-level the subregion categories for nice display
-field$subregion <- factor(x = field$subregion, levels = unique(field$subregion),
-labels = c("Baviaanskloof", "Hantam-Tanqua-\nRoggeveld", "Hangklip", "Langeberg", "Cederberg", "Cape Point"))
+field$subregion <- factor(x = field$subregion, levels = sort(unique(field$subregion)))
+subregion_labels = c("Baviaanskloof", "Hantam-Tanqua-\nRoggeveld", "Hangklip", "Langeberg", "Cederberg", "Cape Point")
 
-field <- field %>% rename('Subregion' = 'subregion')
+
+field <- field %>% rename('Subregion' = 'subregion') 
        
 # ggplot(field, aes(x = height_cm, color = Subregion)) + geom_density() + #canopy_area_cm2
 #   xlim(0, 500)
@@ -86,8 +87,8 @@ ggsave(filename = paste0(figpath, 'foliar_summary_plot.jpeg'), plot = combined_f
 # Figures for lab data ####
 
 # re-level the subregion categories for nice display
-lab$subregion <- factor(x = lab$subregion, levels = unique(lab$subregion),
-                          labels = c("Baviaanskloof", "Hantam-Tanqua-\nRoggeveld", "Hangklip", "Langeberg", "Cederberg", "Cape Point"))
+lab$subregion <- factor(x = lab$subregion, levels = sort(unique(lab$subregion)),
+                          labels = c("Baviaanskloof","Cape Point","Cederberg", "Hangklip", "Hantam-Tanqua-\nRoggeveld", "Langeberg"))
 
 lab <- lab %>% rename('Subregion' = 'subregion')
 
@@ -103,7 +104,7 @@ lma
 lwc <- ggplot(lab, aes(x = lwc, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
   xlab('Leaf water content') + 
   scale_color_brewer(palette = "Dark2") +
-  xlim(0,20) +
+  xlim(0,15) +
   ylab('Density')
 lwc
 
@@ -111,7 +112,7 @@ lwc
 thick <- ggplot(lab, aes(x = leaf_thickness_mm, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
   xlab('Thickness') + 
   scale_color_brewer(palette = "Dark2") +
-  xlim(0,2) +
+  xlim(0,3) +
   ylab('Density')
 thick
 
@@ -119,7 +120,7 @@ thick
 lwr <- ggplot(lab, aes(x = lwr, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
   xlab('Leaf length to width ratio') + 
   scale_color_brewer(palette = "Dark2") +
-  xlim(0,20) +
+  xlim(0,40) +
   ylab('Density')
 lwr
 
@@ -178,17 +179,17 @@ type_df$category <- factor(type_df$category,
                            levels = type_df$category[order(-type_df$count)])
 
 # Create a bar chart
-growth_form_plot <- ggplot(type_df, aes(x = category, y = count)) +
+growth_form_plot <- ggplot(type_df, aes(y = category, x = count)) +
   geom_bar(stat = "identity") +
   # Add labels above bars
-  geom_text(aes(label = count),
-            vjust = -0.4,      # nudge text above bar
-            size = 3.5,# text size
-          ) +
+  # geom_text(aes(label = count),
+  #           vjust = -0.4,      # nudge text above bar
+  #           size = 3.5,# text size
+  #         ) +
   
-  labs(x = "Growth Form", y = "Number of Species") +
+  labs(y = "", x = "Number of Species") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = .75))
+  theme(text = element_text(size= 20))
 
 growth_form_plot
 
@@ -226,8 +227,10 @@ ggplot(month_counts, aes(x = factor(month_label, levels = month.abb), y = n)) +
   theme_minimal() +
   labs(title = "Flowering Abundance Across Months",
        x = "", y = "Species Count") +
-  theme(axis.text.y = element_blank(),
-        axis.text.x = element_text(size = 10, face = "bold"))
+  theme(text = element_text(size = 20),
+        title= element_text(size = 16),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 14, face = "bold"))
 
 expanded_filtered <- expanded %>%
   # Remove the i,b entry
@@ -259,21 +262,21 @@ flower_phen <- ggplot(month_poll_counts,
   theme_minimal() +
   theme(
     axis.text.y = element_blank(),
-    axis.text.x = element_text(size = 10, face = "bold")
+    axis.text.x = element_text(size = 14, face = "bold")
   )
 
 
 flower_phen <- flower_phen +
-  theme(
+  theme(text = element_text(size =20),
    legend.position = 'bottom',  # Adjust position inside plot (x, y from 0 to 1)
     legend.background = element_rect(fill = "white", color = NA),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 9)
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 16)
   ) +
-  guides(fill = guide_legend(nrow = 2, byrow = TRUE))
+  guides(fill = guide_legend(nrow = 3, byrow = TRUE))
 
 
-print(flower_phen )
+print(flower_phen)
 
 # Figure summarizing leaf tallies
 
@@ -309,19 +312,19 @@ type_df_lvs$category <- factor(type_df_lvs$category,
                            levels = type_df_lvs$category[order(-type_df_lvs$count)])
 
 # Create a bar chart
-leaf_form_plot <- ggplot(type_df_lvs, aes(x = category, y = count)) +
+leaf_form_plot <- ggplot(type_df_lvs, aes(y = category, x = count)) +
   geom_bar(stat = "identity") +
   # Add labels above bars
-  geom_text(aes(label = count),
-            vjust = -0.4,      # nudge text above bar
-            
-            size = 3.5,# text size
-            ) +
+  # geom_text(aes(label = count),
+  #           vjust = -0.4,      # nudge text above bar
+  #           
+  #           size = 3.5,# text size
+  #           ) +
   
   
-  labs(x = "Leaf Form", y = "Number of Species") +
+  labs(x = "Number of Species", y = "") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = .75))
+  theme(text = element_text(size = 20))
 
 leaf_form_plot
 
@@ -349,7 +352,8 @@ spectrait_clean <- spectrait %>%
   )
 
 # Step 2: Plot with proportion labels
-flam_disp <- ggplot(spectrait_clean, aes(x = flammability, y = n, fill = dispersal)) +
+spectrait_clean2 <- spectrait_clean %>% filter(flammability != 'i') # remove an odd value
+flam_disp <- ggplot(spectrait_clean2, aes(x = flammability, y = n, fill = dispersal)) +
   geom_col(position = position_dodge(width = 0.9)) +
   geom_text(
     aes(label = scales::percent(proportion, accuracy = 1)),
@@ -360,11 +364,12 @@ flam_disp <- ggplot(spectrait_clean, aes(x = flammability, y = n, fill = dispers
   ) +
   scale_fill_brewer(palette = "Set2") +
   theme_minimal() +
-  theme(legend.position = 'bottom',
+  theme(text = element_text(size =20),
+    legend.position = 'bottom',
         legend.background = element_rect(fill = "white", color = NA),
-        legend.title = element_text(size = 10),
-        legend.text = element_text(size = 9)) +
-  labs(x = "Flammability", y = "Count", fill = "Dispersal Type") +
+        legend.title = element_text(size = 16),
+        legend.text = element_text(size = 16)) +
+  labs(x = "Flammability", y = "", fill = "Dispersal Type") +
    guides(fill = guide_legend(nrow = 2, byrow = TRUE))
 flam_disp
 
@@ -393,32 +398,48 @@ ggsave(
 # Figures for vnir spectroscopy data #####
 
 
-# Pivot the data to long format
-vnir_long <- vnir %>%
-  pivot_longer(cols = starts_with("X"),
-               names_to = "wavelength",
-               names_prefix = "X",
-               names_transform = list(wavelength = as.integer),
-               values_to = "reflectance")
+# Add a per-row identifier to taken into account replicate measure with unique sample ID's
+vnir_tagged <- vnir %>%
+  mutate(obs_id = row_number())
 
-# Summarize for median and IQR
+# Pivot to long format
+vnir_long <- vnir_tagged %>%
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "wavelength",
+    names_prefix = "X",
+    names_transform = list(wavelength = as.integer),
+    values_to = "reflectance"
+  )
+
+# Summarize for median (you can drop IQR if not plotting it)
 summary_stats <- vnir_long %>%
   group_by(wavelength) %>%
   summarise(
     median = median(reflectance, na.rm = TRUE),
-    q25 = quantile(reflectance, 0.25, na.rm = TRUE),
-    q75 = quantile(reflectance, 0.75, na.rm = TRUE),
     .groups = "drop"
   )
 
-# Plot 1: Median with IQR ribbon
-p1 <- ggplot(summary_stats, aes(x = wavelength)) +
-  geom_ribbon(aes(ymin = q25, ymax = q75), fill = "gray80", alpha = 0.5) +
-  geom_line(aes(y = median), color = "blue", size = 1.75) +
-  labs(#title = "Median Reflectance with IQR",
-       x = "Wavelength (nm)",
-       y = "Reflectance (%)") +
-  theme_minimal()
+# Plot: individual measurements (transparent) + median (black)
+p1 <- ggplot() +
+  geom_line(
+    data = vnir_long,
+    aes(x = wavelength, y = reflectance, group = obs_id),
+    color = "gray40",
+    alpha = 0.10,
+    linewidth = 0.3
+  ) +
+  geom_line(
+    data = summary_stats,
+    aes(x = wavelength, y = median),
+    color = "black",
+    linewidth = 1.2
+  ) +
+  labs(x = "Wavelength (nm)", y = "Reflectance (%)") +
+  theme_minimal() +
+  theme(text = element_text(size = 20))
+
+p1
 
 # Calculate Coefficient of Variation (CV)
 cv_stats <- vnir_long %>%
@@ -436,13 +457,14 @@ p2 <- ggplot(cv_stats, aes(x = wavelength, y = cv)) +
   labs(#title = "Coefficient of Variation by Wavelength",
        x = "Wavelength (nm)",
        y = "CV") +
-  theme_minimal()
+  theme_minimal() +
+  theme(text = element_text(size = 20))
 
 # Grouped median reflectance by subregion
 grouped_median <- vnir_long %>%
   group_by(subregion, wavelength) %>%
   summarise(median = median(reflectance, na.rm = TRUE), .groups = "drop")
-
+grouped_median$subregion <- factor(x = grouped_median$subregion, levels = sort(unique(grouped_median$subregion)))
 # Plot 3: Median reflectance by subregion
 library(RColorBrewer)
 
@@ -455,28 +477,29 @@ p3 <- ggplot(grouped_median, aes(x = wavelength, y = median, color = subregion))
        y = "Reflectance (%)",
        color = "Subregion") +
   theme_minimal() +
-  theme(legend.position = 'bottom',  # Adjust position as needed
+  theme(text = element_text(size = 20),
+        legend.position = c(0.8,0.3),#'bottom',  # Adjust position as needed
         legend.background = element_rect(fill = "white", color = "gray80"),
-        legend.title = element_text(size = 10),
-        legend.text = element_text(size = 9)) +
-  guides(fill = guide_legend(nrow = 2, byrow = TRUE))
+        legend.title = element_text(size = 20),
+        legend.text = element_text(size = 16)) +
+  guides(color = guide_legend(nrow = 3, byrow = TRUE))
   
-
+p3
 # Combine plots: p1 and p2 stacked, p3 to the right
-combined_spec <- (p1 / p2) | p3
+combined_spec <- p1 / p2 / p3 #(p1 / p2) | p3
 combined_spec <- combined_spec + plot_annotation(tag_levels = 'A')
 print(combined_spec) 
 ggsave(
   filename = paste0(figpath, 'vnir_spec_sumary.tiff'),
   plot = combined_spec,
-  width = 14, height = 10, dpi = 300, units = "in",
+  width = 10, height = 14, dpi = 300, units = "in",
   bg = 'white'
 )
 
 ggsave(
   filename = paste0(figpath, 'vnir_spec_sumary.jpeg'),
   plot = combined_spec,
-  width = 14, height = 10, dpi = 300, units = "in",
+  width = 10, height = 14, dpi = 300, units = "in",
   bg = 'white'
 )
 
@@ -493,26 +516,60 @@ richness <- richness %>%
   left_join(releve %>% select(plot, subregion) %>% distinct(), by = "plot")
 
 
+# Code for old summary plot: 
 # Summarize by subregion and year
-summary <- richness %>%
-  group_by(subregion, year) %>%
-  summarise(
-    median_richness = median(species_richness),
-    lower_iqr = quantile(species_richness, 0.25),
-    upper_iqr = quantile(species_richness, 0.75),
-    .groups = "drop"
-  )
-
+# summary <- richness %>%
+#   group_by(subregion, year) %>%
+#   summarise(
+#     median_richness = median(species_richness),
+#     lower_iqr = quantile(species_richness, 0.25),
+#     upper_iqr = quantile(species_richness, 0.75),
+#     .groups = "drop"
+#   )
 
 # Create a combined factor for subregion and year
+# summary <- summary %>%
+#   mutate(subregion = str_replace(subregion, "_", " ")) %>%
+#   mutate(subregion = str_to_title(subregion)) %>%
+#    mutate(subregion = case_when(subregion == 'Htr' ~ 'HTR',
+#                                 TRUE ~ subregion)) %>%
+#   mutate(
+#     year = factor(year, levels = sort(unique(year))),
+#     subregion_year = interaction(subregion, year, sep = " ")
+#   ) %>%
+#   mutate(
+#     subregion_year = factor(subregion_year, levels = unique(subregion_year))
+#   )
 
 
+# Plot with subregion-year on x-axis
+# sp_rich_plot <- ggplot(summary, aes(x = subregion_year, y = median_richness)) +
+#   geom_bar(stat = "identity", fill = "steelblue") +
+#   geom_errorbar(
+#     aes(ymin = lower_iqr, ymax = upper_iqr),
+#     width = 0.2
+#   ) +
+#   labs(
+#     x = "Subregion and Year",
+#     y = "Median Species Richness"
+#   ) +
+#   theme_minimal() +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# sp_rich_plot
+# 
+# ggsave(
+#   filename = paste0(figpath, 'releve_sumary.tiff'),
+#   plot = sp_rich_plot,
+#   width = 8, height = 6, dpi = 300, units = "in",
+#   bg = 'white'
+# )
 
-summary <- summary %>%
+# New plot of richness flip axes and make violin
+richness_clean <- richness %>%
   mutate(subregion = str_replace(subregion, "_", " ")) %>%
   mutate(subregion = str_to_title(subregion)) %>%
-   mutate(subregion = case_when(subregion == 'Htr' ~ 'HTR',
-                                TRUE ~ subregion)) %>%
+  mutate(subregion = case_when(subregion == 'Htr' ~ 'HTR',
+                               TRUE ~ subregion)) %>%
   mutate(
     year = factor(year, levels = sort(unique(year))),
     subregion_year = interaction(subregion, year, sep = " ")
@@ -522,20 +579,16 @@ summary <- summary %>%
   )
 
 
-# Plot with subregion-year on x-axis
-sp_rich_plot <- ggplot(summary, aes(x = subregion_year, y = median_richness)) +
-  geom_bar(stat = "identity", fill = "steelblue") +
-  geom_errorbar(
-    aes(ymin = lower_iqr, ymax = upper_iqr),
-    width = 0.2
-  ) +
-  labs(
-    x = "Subregion and Year",
-    y = "Median Species Richness"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-sp_rich_plot
+sp_rich_plot <- ggplot(richness_clean,
+       aes(y = reorder(subregion_year, species_richness, FUN = median),
+           x = species_richness)) +
+  geom_violin(fill = "grey85", color = "grey40") +
+  stat_summary(fun = \(x) median(x, na.rm = TRUE),
+               geom = "point",
+               color = "black",
+               size = 2) +
+  labs(y = "", x  = "Species richness") + theme_minimal()
+
 
 ggsave(
   filename = paste0(figpath, 'releve_sumary.tiff'),
@@ -544,6 +597,12 @@ ggsave(
   bg = 'white'
 )
 
+ggsave(
+  filename = paste0(figpath, 'releve_sumary.jpeg'),
+  plot = sp_rich_plot,
+  width = 8, height = 6, dpi = 300, units = "in",
+  bg = 'white'
+)
 # write out releve richness layer
 richness_gis <- richness %>%
   left_join(releve %>% select(plot, latitude, longitude) %>% distinct(), by = "plot") 
