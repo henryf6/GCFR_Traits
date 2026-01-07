@@ -75,7 +75,7 @@ fieldtrait_polished_no_dupes <- fieldtrait_polished %>%
   filter(!duplicated(.))
 
 # write out polished file
-write.csv(fieldtrait_polished_no_dupes, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Leaf_Struct_Water_Traits.csv',
+write.csv(fieldtrait_polished_no_dupes, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/leaf_struct_water_traits.csv',
           row.names= FALSE)
 
 
@@ -130,7 +130,7 @@ labtrait_polished_no_dupes <- labtrait_polished %>%
   filter(!duplicated(.))
 
 # write out polished file
-write.csv(labtrait_polished_no_dupes, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Canopy_Leaf_Chemistry.csv',
+write.csv(labtrait_polished_no_dupes, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/canopy_leaf_chemistry.csv',
           row.names= FALSE)
 
 
@@ -227,7 +227,7 @@ spectrait_polished <- spectrait_polished %>% dplyr::select(!functional_twig)
 which(spectrait_polished  %>% duplicated() == TRUE)
 
 # write out polished file
-write.csv(spectrait_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Species_Traits.csv',
+write.csv(spectrait_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/species_traits.csv',
           row.names= FALSE)
 
 # Clean up columns for vnir spectroscopy #####
@@ -284,7 +284,7 @@ full_dates_vnir <- paste(vnirspec_polished$year,month, day, sep = "-")
 vnirspec_polished$date <- as.Date(full_dates_vnir)
 
 # write out polished file
-write.csv(vnirspec_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/VNIR_Spectra.csv',
+write.csv(vnirspec_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/vnir_spectra.csv',
           row.names= FALSE)
 
 
@@ -366,7 +366,7 @@ releve_polished <- left_join(releve_polished, comm_loc_join, by = c("plot_clean"
 
 
 # write out polished file
-write.csv(releve_polished, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/Releve.csv',
+write.csv(releve_polished, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/releve.csv',
           row.names= FALSE)
 
 

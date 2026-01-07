@@ -22,7 +22,47 @@ vnirspec <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs
 spectrait <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/speciesXtraits.csv')
 releve <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/Releve_All.csv')
 
-wfo_taxonomy <- read_tsv_arrow("/Users/henryfrye/Dropbox/Intellectual_Endeavours/Wisconsin/ArboretumPhyloPheno/LngArbCode/PhylogeneticCode/classification_v.2023.12.csv")
+# this will not be available on git since the backbone is nearly 1 gb in size. 
+# the latest version can be accessed here:
+# https://www.worldfloraonline.org/downloadData;jsessionid=16FC96696DE5D11981026F44546F3E96
+wfo_taxonomy <- read_tsv("/Users/henryfrye/Dropbox/Intellectual_Endeavours/Wisconsin/ArboretumPhyloPheno/LngArbCode/PhylogeneticCode/classification_v.2023.12.csv")
+
+# make a couple minor edits by hand given input from botanist (RT) ####
+
+# For labtait, fieldtrait, and vnirspec adjust the original species name entry as follows:
+#   1) replace Erica areolata at 710_17_langeberg as just Erica, E. areolata is a narrow endemic in a different region
+#   2) The accepted name for Erica demissa is Erica oresbia for 703_8_baviaanskloof, 718_9_baviaanskloof, and 
+#   701_59_baviaanskloof ... the WFO match does not perform well here. 
+#   3) 711_18_baviaanskloof make sure Erica sparrmanii with two r's and i's and only 1 n
+
+labtrait <- labtrait %>% mutate(finalname = case_when(
+  NewUID == '710_17_langeberg' & finalname == 'Erica areolata' ~ 'Erica',
+  NewUID == '703_8_baviaanskloof' & finalname == 'Erica demissa' ~ 'Erica oresbia',
+  NewUID == '718_9_baviaanskloof' & finalname == 'Erica demissa' ~ 'Erica oresbia',
+  NewUID == '701_59_baviaanskloof' & finalname == 'Erica demissa' ~ 'Erica oresbia',
+  NewUID == '711_18_baviaanskloof' & finalname == 'Erica sparrmannii' ~ 'Erica sparrmanii',
+  TRUE ~ finalname
+))
+
+fieldtrait <- fieldtrait %>% mutate(finalname = case_when(
+  NewUID == '710_17_langeberg' & finalname == 'Erica areolata' ~ 'Erica',
+  NewUID == '703_8_baviaanskloof' & finalname == 'Erica demissa' ~ 'Erica oresbia',
+  NewUID == '718_9_baviaanskloof' & finalname == 'Erica demissa' ~ 'Erica oresbia',
+  NewUID == '701_59_baviaanskloof' & finalname == 'Erica demissa' ~ 'Erica oresbia',
+  NewUID == '711_18_baviaanskloof' & finalname == 'Erica sparrmannii' ~ 'Erica sparrmanii',
+  TRUE ~ finalname
+))
+
+vnirspec <- vnirspec %>% mutate(finalname = case_when(
+  NewUID == '710_17_LB' & finalname == 'Erica areolata' ~ 'Erica',
+  NewUID == '703_8_BK' & finalname == 'Erica demissa' ~ 'Erica oresbia',
+  NewUID == '718_9_BK' & finalname == 'Erica demissa' ~ 'Erica oresbia',
+  NewUID == '701_59_BK' & finalname == 'Erica demissa' ~ 'Erica oresbia',
+  NewUID == '711_18_BK' & finalname == 'Erica sparrmannii' ~ 'Erica sparrmanii',
+  TRUE ~ finalname
+))
+
+
 
 # Check lab traits ####
 
@@ -175,3 +215,4 @@ releve_taxa_cleaned <- releve_wfo %>% rename('ScientificName_WFO' = scientificNa
   dplyr::select(Species, Family, ScientificName_WFO, scientificNameAuthorship, Family_WFO, Plot:RelPercCover)
 
 write.csv(releve_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/releve_taxa_clean.csv',row.names= FALSE)
+
