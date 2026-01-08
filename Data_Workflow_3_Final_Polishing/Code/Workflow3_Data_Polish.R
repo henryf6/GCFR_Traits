@@ -1,8 +1,8 @@
 ########################################################
 # Workflow3_Data_Polish.R
 #
-# Purpose: Make uniform column names and order, create data dictionaries
-# as summaries
+# Purpose: Make uniform column names and order,
+# create data dictionaries
 #
 # Date Created: July 2025
 # Most recent modification: 
@@ -19,12 +19,11 @@ spectrait <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outpu
 vnirspec <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/vnir_taxa_clean.csv')
 releve <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/releve_taxa_clean.csv')
 
-# read in MG classification for a quick fix on releve data
+# read in Manning and Goldblatt classification for a data fix on releve data
 taxa <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/GMTaxonomy.csv')
 comm_loc <- read.csv('GCFR_Traits/Spatial_Data/Comm_Plot_Lat_Lon_Coords.csv')
 
-# Clean up columns for field traits #####
-
+# Clean up columns for field traits (foliar chemistry and canopy) #####
 fieldtrait_polished <- fieldtrait %>% rename('unique_ID' = 'NewUID', # ID system is no longer "new"
                                              'scientific_name_original' = 'Species', # original designation
                                              'genus_MG' = 'Genus_GM', # match the order of the flora citation
@@ -35,7 +34,7 @@ fieldtrait_polished <- fieldtrait %>% rename('unique_ID' = 'NewUID', # ID system
                                              'subregion' = 'region',
                                              'canopy_cover_cm2' = 'canopy_area_cm2') # match manuscript descriptions
                                              
-# Create year of measurement column (based on this file: /Users/henryfrye/Dropbox/Intellectual_Endeavours/UConn/Research/ZA_Dimensions_Data/data_base/Spec_Trait_All.csv)
+# Create year of measurement column (based on this local file: /Users/henryfrye/Dropbox/Intellectual_Endeavours/UConn/Research/ZA_Dimensions_Data/data_base/Spec_Trait_All.csv)
 fieldtrait_polished <- fieldtrait_polished %>% mutate(year = case_when(
   subregion == 'baviaanskloof' ~ 2011,
   subregion == 'htr' ~ 2014,
@@ -70,6 +69,9 @@ fieldtrait_polished <- fieldtrait_polished %>%
     )
   )
 
+# Remove obvious carbon outliers above 100% and treat as NA
+fieldtrait_polished <- fieldtrait_polished %>% mutate(percent_C = na_if(percent_C,max(fieldtrait_polished$percent_C, na.rm = TRUE)))
+
 # Return only the first occurring row duplicate
 fieldtrait_polished_no_dupes <- fieldtrait_polished %>%
   filter(!duplicated(.))
@@ -79,7 +81,7 @@ write.csv(fieldtrait_polished_no_dupes, '/Users/henryfrye/Dropbox/Intellectual_E
           row.names= FALSE)
 
 
-# Clean up columns for lab traits #####
+# Clean up columns for lab traits (foliar structure and water) #####
 
 labtrait_polished <- labtrait %>% rename('unique_ID' = 'NewUID', # ID system is no longer "new"
                                              'scientific_name_original' = 'Species', # original designation
@@ -109,7 +111,7 @@ day <- substr(lab_dates_str, 3, 4)
 full_dates_lab <- paste(labtrait_polished$year,month, day, sep = "-")
 labtrait_polished$date <- as.Date(full_dates_lab)
 
-# year column no longer necessary
+# Year column no longer necessary
 labtrait_polished <- labtrait_polished %>% dplyr::select(!year)
 
 # Clean the column
@@ -122,19 +124,18 @@ labtrait_polished <- labtrait_polished %>%
       num_leaves == "1*" ~ "stem", # based on notes in original sheet
       TRUE ~ num_leaves))
 
-# remove obvious 400% carbon outlier and make missing
-fieldtrait_polished <- fieldtrait_polished %>% mutate(percent_C = na_if(percent_C,max(fieldtrait_polished$percent_C, na.rm = TRUE)))
+
                                                  
 # Return only the first occurring row duplicate
 labtrait_polished_no_dupes <- labtrait_polished %>%
   filter(!duplicated(.))
 
-# write out polished file
+# Write out polished file
 write.csv(labtrait_polished_no_dupes, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/canopy_leaf_chemistry.csv',
           row.names= FALSE)
 
 
-# Clean up columns for species traits #####
+# Clean up columns for species traits table #####
 
 spectrait_polished <- spectrait %>% rename('scientific_name_original' = 'species', # original designation
                                            'scientific_name_MG' = 'genus_species_GM',
@@ -143,20 +144,20 @@ spectrait_polished <- spectrait %>% rename('scientific_name_original' = 'species
                                              'scientific_name_authorship' = 'scientificNameAuthorship',
                                              'family_WFO' = 'Family_WFO') 
 
-# remove extraneous column (family designation based on Plants of South Africa)
+# Remove extra column (family designation based on Plants of South Africa)
 spectrait_polished <- spectrait_polished %>% dplyr::select(!family_POSA)
 
-# investigate blank scientific_name_original rows
+# Investigate blank scientific_name_original rows
 spectrait_polished[which(spectrait_polished$scientific_name_original == ''),]
 
-# remove the wonky Albuca cf. namaquensis entry... it doesn't appear in the other datasets
+# Remove the wonky Albuca cf. namaquensis entry... it doesn't appear in the other datasets
 spectrait_polished <- spectrait_polished %>% dplyr::filter(scientific_name_MG != 'Albuca cf. namaquensis')
 
 # Convert blank entries for lifecycle_POSA to NA
 unique(spectrait_polished$lifecycle_POSA)
 spectrait_polished <- spectrait_polished %>% mutate(lifecycle_POSA =  na_if(lifecycle_POSA, "")) # Convert "" to NA
 
-# Clean up flower begin
+# Clean flower begin variable
 unique(spectrait_polished$flower_begin)
 table(spectrait_polished$flower_begin)
 spectrait_polished[which(spectrait_polished$flower_begin == 'A'),] # A stands for all-year
@@ -177,7 +178,7 @@ spectrait_polished <- spectrait_polished %>% mutate(
                                            TRUE ~ flower_begin))
 table(spectrait_polished$flower_begin)
 
-# clean up flower end column
+# Clean flower end column
 unique(spectrait_polished$flower_end)
 spectrait_polished[which(spectrait_polished$flower_end == '?'),]
 
@@ -186,19 +187,19 @@ spectrait_polished <- spectrait_polished %>% mutate(
   flower_end = na_if(flower_end,''))
 unique(spectrait_polished$flower_end)
 
-# clean up alt flower begin column
+# Clean up alt flower begin column
 unique(spectrait_polished$flower_begin_alt)
 spectrait_polished <- spectrait_polished %>% mutate(
   flower_begin_alt = na_if(flower_begin_alt,''))
   
 unique(spectrait_polished$flower_begin_alt)
 
-# clean up alt flower end column
+# Clean up alt flower end column
 unique(spectrait_polished$flower_end_alt)
 spectrait_polished <- spectrait_polished %>% mutate(
   flower_end_alt = na_if(flower_end_alt,''))
 
-# clean up functional twig column
+# Clean up functional twig column
 unique(spectrait_polished$functional_twig)
 
 spectrait_polished <- spectrait_polished %>% mutate(
@@ -206,7 +207,7 @@ spectrait_polished <- spectrait_polished %>% mutate(
   functional_twig = case_when( functional_twig == '0' ~ 'no',
   TRUE ~ functional_twig))
 
-# clean up leaf type column
+# Clean up leaf type column
 unique(spectrait_polished$leaf_type)
 spectrait_polished <- spectrait_polished %>% mutate(
   leaf_type = case_when( leaf_type == 'Leaf' ~ 'leaf',
@@ -218,21 +219,19 @@ spectrait_polished <- spectrait_polished %>% mutate(
                          leaf_type == 'microphylls' ~ 'microphyll',
                                TRUE ~ leaf_type))
 
-# convert family MG to sentence case
+# Convert family MG to sentence case
 spectrait_polished$family_MG <- str_to_title(spectrait_polished$family_MG)
 
-# remove functional twig column as this was a project specific designation
-# and not for general use
+# Remove functional twig column as this was a project specific designation
+#   and not for general use
 spectrait_polished <- spectrait_polished %>% dplyr::select(!functional_twig)
 which(spectrait_polished  %>% duplicated() == TRUE)
 
-# write out polished file
+# Write out polished file
 write.csv(spectrait_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/species_traits.csv',
           row.names= FALSE)
 
 # Clean up columns for vnir spectroscopy #####
-
-
 vnirspec_polished <- vnirspec %>% rename('unique_ID' = 'NewUID', # ID system is no longer "new"
                                              'scientific_name_original' = 'finalname', # original designation
                                              'family_MG' = 'FamilyManningGoldblatt', # match the order of the flora citation
@@ -245,19 +244,20 @@ vnirspec_polished <- vnirspec %>% rename('unique_ID' = 'NewUID', # ID system is 
                                          'sample' = 'Sample',
                                          'date' = 'DateMonthDay') # match manuscript descriptions
 
-# No need to include the split the genus and species info or subregion abbreviation, redundant information used for the EcoSis submission
+# No need to include the split the genus and species info or subregion abbreviation,
+#   redundant information used for the EcoSis submission
 vnirspec_polished <- vnirspec_polished %>% dplyr::select(!Genus) %>% 
   dplyr::select(!Species) %>%
   dplyr::select(!SubregAbbr)
 
 
-# convert family from all caps to sentence case (do this for species traits)
+# Convert family from all caps to sentence case (do this for species traits)
 vnirspec_polished$family_MG <- str_to_title(vnirspec_polished$family_MG)
 
-# convert subregion to lower
+# Convert subregion to lower
 vnirspec_polished$subregion <- str_to_lower(vnirspec_polished$subregion)
 
-# fix the baviaanskloof misspelling in subregion
+# Fix the baviaanskloof misspelling in subregion
 vnirspec_polished <- vnirspec_polished %>% mutate(subregion = case_when(
   subregion == 'baviaanksloof' ~ 'baviaanskloof',
   TRUE ~ subregion
@@ -283,7 +283,7 @@ day <- substr(vnirspec_dates_str, 3, 4)
 full_dates_vnir <- paste(vnirspec_polished$year,month, day, sep = "-")
 vnirspec_polished$date <- as.Date(full_dates_vnir)
 
-# write out polished file
+# Write out polished file
 write.csv(vnirspec_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/vnir_spectra.csv',
           row.names= FALSE)
 
@@ -303,11 +303,11 @@ releve_polished <- releve %>% rename('scientific_name_original' = 'Species', # o
                                          'plot_percent_cover' = 'PlotPercCov',
                                          'relative_percent_cover' = 'RelPercCover')
 
-# remove family MG column, does not have a proper join and can be removed since WFO information is largely redunant
+# Remove family MG column, does not have a proper join and can be removed since WFO information is largely redunant
 releve_polished <- releve_polished %>% select(!family_MG)
 
-# convert 1966/1996 Cape to perc cover, 1978 hangklip/ 1993 Langeberg/ Cederberg convert 
-# back to original abundance class for copmletion,
+# Convert 1966/1996 Cape to perc cover, 1978 hangklip/ 1993 Langeberg/ Cederberg convert 
+#   back to original abundance class for copmletion,
 older_subregions <- c('langeberg', 'cederberg', 'hangklip')
 htr_cover_class_year <- c('2004','2013') # the 2014 htr plots were done on percent cover scale
 old_cape_year <- c('1966', '1996')
@@ -336,7 +336,7 @@ releve_polished <- releve_polished %>% mutate(abundance_class = case_when(
   TRUE ~ percent_cover
 ))
 
-# add in missing relative covers
+# Add in missing relative covers
 releve_polished <- releve_polished %>%
   group_by(plot,year) %>%
   mutate(plot_percent_cover = if_else(
@@ -351,7 +351,7 @@ releve_polished <- releve_polished %>%
   )) %>%
   ungroup()
   
-# join in lat/long data
+# Join in lat/long data
 comm_loc_join <- comm_loc %>% unite(plot, Site, PLOT, sep = "_" )
 
 # Remove suffixes like "_a", "_b" from plot values
@@ -365,12 +365,9 @@ releve_polished <- left_join(releve_polished, comm_loc_join, by = c("plot_clean"
   select(scientific_name_original:subregion, latitude, longitude, percent_cover:plot_percent_cover)
 
 
-# write out polished file
+# Write out polished file
 write.csv(releve_polished, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/releve.csv',
           row.names= FALSE)
-
-
-# can we pull in geospatial data for each plot?
 
 # Create data dictionary function ####
 
@@ -420,8 +417,7 @@ create_data_dictionary <- function(df) {
 }
 
 
-
-# Data dictionary create for field traits ####
+# Data dictionary for field traits (foliar chemistry and canopy ) ####
 field_dict <- create_data_dictionary(fieldtrait_polished_no_dupes)
 
 write.csv(field_dict, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_dictionaries/field_dictionary_raw.csv',
@@ -434,7 +430,7 @@ length(unique(fieldtrait_polished_no_dupes$unique_ID))
 length(unique(fieldtrait_polished_no_dupes$scientific_name_original))
 length(unique(fieldtrait_polished_no_dupes$scientific_name_WFO)) # use WFO number since a couple names were synonyms
 
-# species with highest and low N value
+# Species with highest and low N value
 fieldtrait_polished_no_dupes[which(fieldtrait_polished_no_dupes$percent_N == min(fieldtrait_polished_no_dupes$percent_N, na.rm = TRUE)),]
 fieldtrait_polished_no_dupes[which(fieldtrait_polished_no_dupes$percent_N == max(fieldtrait_polished_no_dupes$percent_N, na.rm = TRUE)),]
 
@@ -461,9 +457,8 @@ missing_N <- fieldtrait_polished_no_dupes[which(is.na(fieldtrait_polished_no_dup
 table(missing_N$subregion)
 table(missing_N$family_MG)
 
-# Data dictionary create for lab traits ####
+# Data dictionary create for lab traits (leaf structure and water) ####
 
-# create data dictionary for lab traits
 lab_dict <- create_data_dictionary(labtrait_polished_no_dupes)
 
 write.csv(lab_dict, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_dictionaries/lab_dictionary_raw.csv',
@@ -488,33 +483,34 @@ labtrait_polished_no_dupes[which(labtrait_polished_no_dupes$leaf_thickness_mm ==
 labtrait_polished_no_dupes[which(labtrait_polished_no_dupes$lwr == min(labtrait_polished_no_dupes$lwr, na.rm = TRUE)),]
 labtrait_polished_no_dupes[which(labtrait_polished_no_dupes$lwr == max(labtrait_polished_no_dupes$lwr, na.rm = TRUE)),]
 
-# missingness of area
+# Missingness of leaf area
 missing_area <- labtrait_polished_no_dupes[which(is.na(labtrait_polished_no_dupes$leaf_area_cm2) == TRUE),]
 missing_area
 
+# Missingness of fresh weight
 missing_fresh_wt <- labtrait_polished_no_dupes[which(is.na(labtrait_polished_no_dupes$leaf_fresh_wgt_g) == TRUE),]
 missing_fresh_wt
 table(missing_fresh_wt$subregion)
 
-# Data dictionary create for species traits ####
+# Data dictionary for species traits ####
 spectrait_dict <- create_data_dictionary(spectrait_polished)
 
 write.csv(spectrait_dict, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_dictionaries/species_trait_dictionary_raw.csv',
           row.names = FALSE)
 
-# which missing for lifecycle POSA
+# Which missing for lifecycle POSA
 missinglife <- spectrait_polished[which(is.na(spectrait_polished$lifecycle_POSA) == TRUE),]
 sort(table(missinglife$family_WFO))
 
-# which missing for flowering
+# Which missing for flowering begin
 missing_flower_begin <- spectrait_polished[which(is.na(spectrait_polished$flower_begin) == TRUE),]
 sort(table(missing_flower_begin$family_WFO))
 
-# which missing for flowering
+# Which missing for flowering end
 missing_flower_end <- spectrait_polished[which(is.na(spectrait_polished$flower_end) == TRUE),]
 sort(table(missing_flower_end$family_WFO))
 
-# which missing for leaf length
+# Which missing for leaf length
 missing_length <- spectrait_polished[which(is.na(spectrait_polished$leaf_length) == TRUE),]
 sort(table(missing_length$family_WFO))
 
@@ -532,16 +528,16 @@ min(vnirspec[,15:514])
 # Maximum value
 max(vnirspec[,15:514])
 
-# number of measurements
+# Number of measurements
 length(unique(vnirspec_polished$unique_ID))
 
-# number of species
+# Number of species
 length(unique(vnirspec_polished$scientific_name_WFO))
 
-# what is the most measured species
+# What is the most measured species
 sort(table(vnirspec_polished$scientific_name_WFO),decreasing = TRUE)[1:10]
 
-# breakdown of species replicates
+# Breakdown of species replicates
 table(table(vnirspec_polished$scientific_name_WFO))
 
 # Data dictionary create for releve data ####

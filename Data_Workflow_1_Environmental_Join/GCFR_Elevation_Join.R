@@ -1,7 +1,7 @@
 ########################################################
 # GCFR_Elevation_Join.R
 #
-# Purpose: Join Earth Engine derived data to Dimensions
+# Purpose: Join Earth Engine derived data to GCFR
 # trait collection sites
 #
 # Date: March 2025

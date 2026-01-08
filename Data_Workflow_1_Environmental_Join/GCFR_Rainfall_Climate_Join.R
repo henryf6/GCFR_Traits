@@ -1,7 +1,7 @@
 ########################################################
 # GCFR_Rainfall_Climate_Join.R
 #
-# Purpose: Join CHELSA environmental data to Dimensions
+# Purpose: Join CHELSA environmental data to GCFR
 # trait collection sites
 #
 # Date: March 2025
@@ -17,7 +17,7 @@ library(dplyr)
 # Read the CSV file containing point data of field trait collections
 point_data <- st_read('GCFR_Traits/Spatial_Data/Field_Trait_Locations.geojson')
 
-# Step 2: Read the folder containing GeoTIFF files (available via CHELSA or upon request of co-author)
+# Read the folder containing GeoTIFF files (available via CHELSA or upon request of co-author)
 tiff_folder <- "/Volumes/Extreme_SSD/1981-2010/pr"
 tiff_files <- list.files(tiff_folder, pattern = "\\.tif$", full.names = TRUE)
 
@@ -84,7 +84,7 @@ extracted_data  <- extracted_data  %>%
   mutate(WinterPrProp = WinterRainfallTot / AnnualTotPr)
 extracted_data
 
-# Define.48 threshold of WinterPrProp, categorize regions to winter rainfal, neither, or summer/allyear
+# Define 0.48 threshold of WinterPrProp, categorize regions to winter rainfal, neither, or summer/allyear
 extracted_data <- extracted_data %>%
   mutate(RainfallCat = case_when(
     WinterPrProp >= 0.48 ~ "Winter",

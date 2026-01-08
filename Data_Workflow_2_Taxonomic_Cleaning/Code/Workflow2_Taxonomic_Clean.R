@@ -13,7 +13,7 @@
 library(tidyverse)
 library(WorldFlora)
 library(taxize)
-library(arrow)
+#library(arrow)
 
 # Read in data
 labtrait <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/LabTraitDataERT.csv')
@@ -22,12 +22,12 @@ vnirspec <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs
 spectrait <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/speciesXtraits.csv')
 releve <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/Releve_All.csv')
 
-# this will not be available on git since the backbone is nearly 1 gb in size. 
-# the latest version can be accessed here:
-# https://www.worldfloraonline.org/downloadData;jsessionid=16FC96696DE5D11981026F44546F3E96
+# The backbone is not available via this git repo since it is nearly 1 gb in size. 
+# The latest version can be accessed here:
+#   https://www.worldfloraonline.org/downloadData;jsessionid=16FC96696DE5D11981026F44546F3E96
 wfo_taxonomy <- read_tsv("/Users/henryfrye/Dropbox/Intellectual_Endeavours/Wisconsin/ArboretumPhyloPheno/LngArbCode/PhylogeneticCode/classification_v.2023.12.csv")
 
-# make a couple minor edits by hand given input from botanist (RT) ####
+# Make minor taxonomic edits by hand given input from botanist (RT) ####
 
 # For labtait, fieldtrait, and vnirspec adjust the original species name entry as follows:
 #   1) replace Erica areolata at 710_17_langeberg as just Erica, E. areolata is a narrow endemic in a different region
@@ -62,18 +62,16 @@ vnirspec <- vnirspec %>% mutate(finalname = case_when(
   TRUE ~ finalname
 ))
 
+# Data checks lab traits (these are the foliar chemistry and canopy data) ####
 
-
-# Check lab traits ####
-
-# check the species differences with the manning and goldblatt text
+# Check the species differences with the manning and goldblatt text
 gm_taxa <- read.csv(file = 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/GMTaxonomy.csv')
 sp_id_misalign_lab <- labtrait %>% dplyr::filter(! finalname %in% gm_taxa$Taxon)
 
-# how many taxa are off
+# How many taxa are off?
 length(unique((sp_id_misalign_lab$finalname)))
 
-# Remove sp, sp. or species from final name designations for the sake consistency
+# Remove "sp", "sp." or "species" from final name designations for the sake consistency
 labtrait$finalname <- ifelse(
   grepl("\\bsp\\.?\\b|\\bsp\\s*\\d+\\b|\\bspecies\\b", labtrait$finalname, ignore.case = TRUE) &
     !grepl("\\bsubsp\\b|\\bvar\\b|\\bcf\\b", labtrait$finalname, ignore.case = TRUE),
@@ -81,20 +79,20 @@ labtrait$finalname <- ifelse(
   labtrait$finalname
 )
 
-#re-run and view mismatches
+# Re-run and view mismatches
 sp_id_misalign_lab <- labtrait %>% dplyr::filter(! finalname %in% gm_taxa$Taxon)
 
-# Remove form C, part of this taxa Lotononis falcata (form C)
+# Remove "(form C)", part of this taxa Lotononis falcata (form C)
 labtrait <- labtrait %>% mutate(finalname = case_when(
   finalname == 'Lotononis falcata (form C)' ~ 'Lotononis falcata',
   TRUE ~ finalname
 ))
 
-# Check field traits first ####
+# Data checks for field traits (leaf morphology and water content) ####
 sp_id_misalign_field <- fieldtrait %>% dplyr::filter(! finalname %in% gm_taxa$Taxon)
 length(unique((sp_id_misalign_field$finalname)))
 
-# Remove sp, sp. or species from final name designations for the sake consistency
+# Remove "sp", "sp." or "species" from final name designations for the sake consistency
 fieldtrait$finalname <- ifelse(
   grepl("\\bsp\\.?\\b|\\bsp\\s*\\d+\\b|\\bspecies\\b", fieldtrait$finalname, ignore.case = TRUE) &
     !grepl("\\bsubsp\\b|\\bvar\\b|\\bcf\\b", fieldtrait$finalname, ignore.case = TRUE),
@@ -102,7 +100,7 @@ fieldtrait$finalname <- ifelse(
   fieldtrait$finalname
 )
 
-# Remove form C, part of this taxa Lotononis falcata (form C)
+# Remove "(form C)", part of this taxa Lotononis falcata (form C)
 fieldtrait <- fieldtrait %>% mutate(finalname = case_when(
   finalname == 'Lotononis falcata (form C)' ~ 'Lotononis falcata',
   TRUE ~ finalname
@@ -112,23 +110,23 @@ fieldtrait <- fieldtrait %>% mutate(finalname = case_when(
 sp_id_misalign_field <- fieldtrait %>% dplyr::filter(! finalname %in% gm_taxa$Taxon)
 length(unique((sp_id_misalign_field$finalname)))
 
-# Check species-level traits ####
+# Data check for species-level trait table ####
 sp_id_misalign_field <- spectrait %>% dplyr::filter(! genus_species_GM %in% gm_taxa$Taxon)
 length(unique((sp_id_misalign_field$finalname))) # 0, which makes sense since the species are based on GM
 
-# Check spectral data
+# Check spectral data ####
 sp_id_misalign_vnir <- vnirspec %>% dplyr::filter(! finalname %in% gm_taxa$Taxon)
 length(unique((sp_id_misalign_field$finalname))) # great 0 as well!
 
-# WFO taxa match for lab traits ####
+# WFO taxon harmonization for foliar structure and water traits ####
 
-
-# Check names of arboretum against World Flora
+# Check names against World Flora
 NameCheck <- WFO.match(spec.data = labtrait, WFO.data= wfo_taxonomy, spec.name = "finalname",
                        Fuzzy.min = TRUE)
+# Choose single best accepted WFO taxon designation
 Name_single <- WFO.one(NameCheck)
 
-
+# Reduce data column output and reorganize columns
 NameCheck_sel <- Name_single %>% dplyr::select(NewUID ,finalname.ORIG, scientificName, family, scientificNameAuthorship)
 
 NameCheck_mini_simple <- NameCheck_sel %>% distinct()
@@ -142,11 +140,13 @@ labtrait_taxa_cleaned <- labtrait_wfo %>% rename('ScientificName_WFO' = scientif
 
 write.csv(labtrait_taxa_cleaned, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/lab_trait_taxa_clean.csv',row.names= FALSE)
 
-# WFO taxa match for field traits
+# WFO taxon harmonization for foliar chemistry and canopy traits #####
 
-# Check names of arboretum against World Flora
+# Check names against World Flora
 NameCheckField <- WFO.match(spec.data = fieldtrait, WFO.data= wfo_taxonomy, spec.name = "finalname",
                        Fuzzy.min = TRUE)
+
+# Choose single best accepted WFO taxon designation
 Name_single_field <- WFO.one(NameCheckField)
 
 NameCheck_sel_field <-Name_single_field %>% dplyr::select(NewUID ,finalname.ORIG, scientificName, family, scientificNameAuthorship)
@@ -161,7 +161,7 @@ fieldtrait_taxa_cleaned <- fieldtrait_wfo %>% rename('ScientificName_WFO' = scie
 
 write.csv(fieldtrait_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/field_trait_taxa_clean.csv',row.names= FALSE)
 
-# WFO taxa match for species traits ####
+# WFO taxon harmonization for species trait table ####
 
 NameCheckSpec <- WFO.match(spec.data = spectrait, WFO.data= wfo_taxonomy, spec.name = "species",
                             Fuzzy.min = TRUE)
@@ -182,7 +182,7 @@ spectrait_taxa_cleaned <-  spectrait_taxa_cleaned %>% mutate(family_GM = str_to_
 
 write.csv(spectrait_taxa_cleaned, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/species_trait_taxa_clean.csv',row.names= FALSE)
 
-# WFO taxa match for vnir spectroscopy data ####
+# WFO taxon harmonization for vnir spectroscopy data ####
 
 NameCheck_vnir <- WFO.match(spec.data = vnirspec, WFO.data= wfo_taxonomy, spec.name = "finalname",
                            Fuzzy.min = TRUE)
@@ -199,7 +199,7 @@ vnir_taxa_cleaned <- vnir_wfo %>% rename('ScientificName_WFO' = scientificName, 
 
 write.csv(vnir_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/vnir_taxa_clean.csv',row.names= FALSE)
 
-# WFO taxa match for releve data ####
+# WFO taxon harmonization for releve data ####
 
 NameCheck_releve <- WFO.match(spec.data = releve, WFO.data= wfo_taxonomy, spec.name = "Species",
                             Fuzzy.min = TRUE)

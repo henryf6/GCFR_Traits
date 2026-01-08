@@ -1,7 +1,7 @@
 ########################################################
 # GCFR_CHELSA_Climate_Join.R
 #
-# Purpose: Join CHELSA environmental data to Dimensions
+# Purpose: Join CHELSA environmental data to GCFR
 # trait collection sites
 #
 # Originally create March 2025
