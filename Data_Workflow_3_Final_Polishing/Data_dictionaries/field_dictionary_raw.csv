@@ -1,25 +1,26 @@
 "Column.Name","Description","Variable.class","Variable.Range.Categories","Units","Number.missing"
-"unique_ID",NA,"character","619_1_hangklip - 826_9_htr",NA,0
+"sample_ID",NA,"character","619_1_hangklip_CM - 826_9_htr_BHR",NA,0
+"sample_id",NA,"character","619_1_hangklip_CM - 826_9_htr_BHR",NA,0
 "scientific_name_original",NA,"character","Abutilon sonneratianum - Zygophyllum retrofractum",NA,0
-"genus_MG",NA,"character","Abutilon - Zantedeschia",NA,116
 "family_MG",NA,"character","Acanthaceae - Zygophyllaceae",NA,116
 "scientific_name_WFO",NA,"character","Abutilon sonneratianum - Zygophyllum retrofractum",NA,1
-"scientific_name_authorship",NA,"character","(A.DC.) F.White - Willd.",NA,7
+"scientific_name_authorship_WFO",NA,"character","(A.DC.) F.White - Willd.",NA,6
 "family_WFO",NA,"character","Acanthaceae - Zygophyllaceae",NA,1
 "latitude",NA,"numeric","-34.36736 - -31.24257",NA,0
 "longitude",NA,"numeric","18.38403 - 24.34838",NA,0
 "subregion",NA,"character","baviaanskloof - langeberg",NA,0
 "date",NA,"Date","2010-07-21 - 2014-08-26",NA,0
 "collector",NA,"character","a - TEM",NA,0
-"sample",NA,"integer","1 - 94",NA,0
+"sample",NA,"numeric","1 - 94",NA,0
 "height_cm",NA,"numeric","0 - 2500",NA,0
-"canopy_axis_1_cm",NA,"numeric","1 - 1400",NA,0
-"canopy_axis_2_cm",NA,"numeric","0.5 - 1300",NA,0
-"canopy_cover_cm2",NA,"numeric","0.392699082 - 1429424.657",NA,0
-"branch_order",NA,"integer","0 - 4",NA,14
+"canopy_axis_1_cm",NA,"numeric","1 - 1400",NA,46
+"canopy_axis_2_cm",NA,"numeric","0.5 - 1300",NA,46
+"canopy_cover_cm2",NA,"numeric","0.392699082 - 1429424.657",NA,46
+"branch_order",NA,"numeric","0 - 4",NA,14
 "pubescence",NA,"character","B - S",NA,531
 "percent_N",NA,"numeric","0.2 - 4.837029217",NA,119
-"percent_C",NA,"numeric","14.38804359 - 415.884074",NA,119
+"percent_C",NA,"numeric","14.38804359 - 59.95866781",NA,120
 "C_to_N_ratio",NA,"numeric","6.654625191 - 234.89",NA,119
 "d_15N_14N",NA,"numeric","-10.26540887 - 17.38413758",NA,119
 "d_13C_12C",NA,"numeric","-33.2334073 - -11.50918626",NA,119
+"quality_flag",NA,"character"," - n_lma_covariation",NA,0

@@ -3,11 +3,10 @@
 "scientific_name_MG",NA,"character","Abutilon sonneratianum - Zyrphelis microcephala",NA,0
 "family_MG",NA,"character","Acanthaceae - Zygophyllaceae",NA,0
 "scientific_name_WFO",NA,"character","Abutilon sonneratianum - Zyrphelis microcephala",NA,0
-"scientific_name_authorship",NA,"character","(A.DC.) E.Wimm. - Wolley-Dod",NA,3
+"scientific_name_authorship_WFO",NA,"character","(Poir.) Masw. - Zyrphelis microcephala",NA,0
 "family_WFO",NA,"character","Acanthaceae - Zygophyllaceae",NA,0
 "perennial",NA,"integer","0 - 1",NA,0
 "annual",NA,"integer","0 - 1",NA,0
-"lifecycle_POSA",NA,"character","Annual - Perennial",NA,423
 "monoecious",NA,"integer","0 - 1",NA,0
 "dioecious",NA,"integer","0 - 1",NA,0
 "evergreen",NA,"integer","0 - 1",NA,0
@@ -17,10 +16,10 @@
 "flower_postfire",NA,"integer","0 - 1",NA,1
 "resprout_postfire",NA,"integer","0 - 1",NA,0
 "serotinous",NA,"integer","0 - 1",NA,0
-"flower_begin",NA,"character","All year - Sep",NA,182
-"flower_end",NA,"character","Apr - Sep",NA,204
-"flower_begin_alt",NA,"character","Aug - Sep",NA,2217
-"flower_end_alt",NA,"character","Apr - Nov",NA,2221
+"flower_begin",NA,"character"," - Sep",NA,0
+"flower_end",NA,"character"," - Sep",NA,28
+"flower_begin_alt",NA,"character"," - Sep",NA,262
+"flower_end_alt",NA,"character"," - Nov",NA,266
 "max_height_cm",NA,"integer","1 - 3000",NA,0
 "herb",NA,"integer","0 - 1",NA,0
 "geophyte",NA,"integer","0 - 1",NA,0
@@ -38,7 +37,7 @@
 "leaf_succulent",NA,"integer","0 - 1",NA,0
 "stem_succulent",NA,"integer","0 - 1",NA,0
 "other_succulent",NA,"integer","0 - 1",NA,1
-"leaf_type",NA,"character","cladode - phyllode",NA,1
+"leaf_type",NA,"character","Cladode - Phyllode",NA,1
 "lvs_linear",NA,"integer","0 - 1",NA,0
 "lvs_intermediate",NA,"integer","0 - 2",NA,0
 "lvs_oval",NA,"integer","0 - 1",NA,0
@@ -49,7 +48,9 @@
 "virtually_no_leaves",NA,"integer","0 - 1",NA,0
 "stems_photosynthetic",NA,"integer","0 - 1",NA,0
 "functional_leaf",NA,"character","culm_stem - none",NA,0
+"functional_twig",NA,"character"," - yes",NA,1
 "plant_longevity",NA,"integer","0 - 3",NA,0
 "flammability",NA,"character","h - m",NA,0
 "pollination",NA,"character","b - w",NA,0
 "dispersal",NA,"character","i - w",NA,0
+"scientific_name_authorship",NA,"character","(Poir.) Masw. - Zyrphelis microcephala",NA,0

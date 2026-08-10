@@ -1,8 +1,9 @@
 "Column.Name","Description","Variable.class","Variable.Range.Categories","Units","Number.missing"
 "scientific_name_original",NA,"character","Abutilon sonneratianum - Zyrphelis microcephala",NA,0
 "scientific_name_WFO",NA,"character","Abutilon sonneratianum - Zyrphelis microcephala",NA,0
-"scientific_name_authorship",NA,"character","(A.DC.) E.Wimm. - Wolley-Dod",NA,11
+"scientific_name_authorship_WFO",NA,"character","(A.DC.) E.Wimm. - Wolley-Dod",NA,5
 "family_WFO",NA,"character","Acanthaceae - Zygophyllaceae",NA,0
+"releve_ID",NA,"character","BK_1_1992 - LB2_99_1993",NA,0
 "plot",NA,"character","BK_1 - LB2_99",NA,0
 "year",NA,"integer","1966 - 2014",NA,0
 "subregion",NA,"character","baviaanskloof - langeberg",NA,0
@@ -11,3 +12,4 @@
 "percent_cover",NA,"numeric","0 - 87.5",NA,0
 "abundance_class",NA,"numeric","0 - 5",NA,10670
 "plot_percent_cover",NA,"numeric","0.1 - 1880",NA,0
+"geom",NA,"sfc_POINT","c(18.80555556, -34.3) - c(NA, NA)",NA,0

@@ -17,33 +17,33 @@ library(forcats)
 library(sf)
 
 # Read in data
-leafstruc <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/leaf_struct_water_traits.csv')
-chem_canop <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/canopy_leaf_chemistry.csv') 
-vnir <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/vnir_spectra.csv')
-releve <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/releve.csv')
-spectrait <- read.csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/species_traits.csv')
+leafstruc <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/leaf_struct_water_traits.csv')
+chem_canop <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/canopy_leaf_chemistry.csv') 
+vnir <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/vnir_spectra.csv')
+releve <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/releve.csv')
+spectrait <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/species_traits.csv')
 
 # create figure path
 figpath <- 'GCFR_Traits/Data_Workflow_4_Figure_Creation/Figures/'
 
-# Figures for leafstruc data ####
+# Figures for chem_canopy data ####
 
 # re-level the subregion categories for nice display
-leafstruc$subregion <- factor(x = leafstruc$subregion, levels = sort(unique(leafstruc$subregion)))
+chem_canop$subregion <- factor(x = chem_canop$subregion, levels = sort(unique(chem_canop$subregion)))
 subregion_labels = c("Baviaanskloof", "Hantam-Tanqua-\nRoggeveld", "Hangklip", "Langeberg", "Cederberg", "Cape Point")
 
 
-leafstruc <- leafstruc %>% rename('Subregion' = 'subregion') 
+chem_canop <- chem_canop %>% rename('Subregion' = 'subregion') 
        
 # Percent N distribution by subregion
-N_plot <- ggplot(leafstruc, aes(x = percent_N, color = Subregion)) + geom_density(linewidth =1) + theme_classic() +
+N_plot <- ggplot(chem_canop, aes(x = percent_N, color = Subregion)) + geom_density(linewidth =1) + theme_classic() +
   xlab('Percent Nitrogen') +
   scale_color_brewer(palette = "Dark2") +
   ylab('Density')
 N_plot
 
 # Percent Carbon distribution by subregion
-C_plot<- ggplot(leafstruc, aes(x = percent_C, color = Subregion)) + 
+C_plot<- ggplot(chem_canop, aes(x = percent_C, color = Subregion)) + 
   geom_density(linewidth =1)+ theme_classic() +
   scale_color_brewer(palette = "Dark2") +
   xlab('Percent Carbon') +
@@ -51,21 +51,41 @@ C_plot<- ggplot(leafstruc, aes(x = percent_C, color = Subregion)) +
 C_plot
 
 # N isotope distribution by subregion
-N_iso <- ggplot(leafstruc, aes(x = d_15N_14N, color = Subregion)) + geom_density(linewidth =1) +
+N_iso <- ggplot(chem_canop, aes(x = d_15N_14N, color = Subregion)) + geom_density(linewidth =1) +
   theme_classic() +
   scale_color_brewer(palette = "Dark2") +
   ylab('Density') +
   xlab(expression(delta^15 * "Nitrogen ("*"\u2030"*")"))
 N_iso
 
+
 # C isotope distribution by subregion
-C_iso <- ggplot(leafstruc, aes(x = d_13C_12C, color = Subregion)) + geom_density(linewidth =1) +
+C_iso <- ggplot(chem_canop, aes(x = d_13C_12C, color = Subregion)) + geom_density(linewidth =1) +
   theme_classic() +
   scale_color_brewer(palette = "Dark2") +
   ylab('Density') +
   xlab(expression(delta^13 * "Carbon ("*"\u2030"*")"))
 
 C_iso
+
+# check whether removeing likely CAM species changes aridity.
+no_sure_cam <- chem_canop %>%filter(!family_WFO == 'Aizoaceae' | family_WFO == 'Crassulaceae')
+ggplot(no_sure_cam, aes(x = d_13C_12C, color = Subregion)) + geom_density(linewidth =1) +
+  theme_classic() +
+  scale_color_brewer(palette = "Dark2") +
+  ylab('Density') +
+  xlab(expression(delta^13 * "Carbon ("*"\u2030"*")"))
+
+# check distribution of C isotopes for members by family
+cede_canopy <- chem_canop %>% filter(Subregion  == 'cederberg')
+cede_canopy %>%
+ggplot(aes(x = d_13C_12C, color = family_WFO))  + geom_histogram(linewidth =1) 
+htr_canop <-chem_canop %>% filter(Subregion  == 'htr')
+htr_canop %>%
+  ggplot(aes(x = d_13C_12C, color = family_WFO))  + geom_histogram(linewidth =1) 
+
+sort(prop.table(table(htr_canop$family_WFO)))
+sort(prop.table(table(cede_canopy$family_WFO)))
 
 # Combine plots into a single figure
 combined_foliar_chem <-ggarrange(N_plot, C_plot, N_iso, C_iso, labels = c('A','B','C','D'), ncol = 2, nrow = 2,
@@ -81,24 +101,24 @@ ggsave(filename = paste0(figpath, 'foliar_summary_plot.jpeg'), plot = combined_f
        bg= 'white')
 
 
-# Figures for chem_canop data ####
+# Figures for leafstruc data ####
 
 # Re-level the subregion categories for graphic display
-chem_canop$subregion <- factor(x = chem_canop$subregion, levels = sort(unique(chem_canop$subregion)),
+leafstruc$subregion <- factor(x = leafstruc$subregion, levels = sort(unique(leafstruc$subregion)),
                           labels = c("Baviaanskloof","Cape Point","Cederberg", "Hangklip", "Hantam-Tanqua-\nRoggeveld", "Langeberg"))
 
-chem_canop <- chem_canop %>% rename('Subregion' = 'subregion')
+leafstruc <- leafstruc %>% rename('Subregion' = 'subregion')
 
 # Leaf mass per area distribution by region
-lma <- ggplot(chem_canop, aes(x = lma, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
+lma <- ggplot(leafstruc, aes(x = lma, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
   xlab('Leaf mass per area') + 
   scale_color_brewer(palette = "Dark2") +
-  xlim(0,0.1) +
+  xlim(0,1000) +
   ylab('Density')
 lma
 
 # Leaf water content distribution by region
-lwc <- ggplot(chem_canop, aes(x = lwc, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
+lwc <- ggplot(leafstruc, aes(x = lwc, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
   xlab('Leaf water content') + 
   scale_color_brewer(palette = "Dark2") +
   xlim(0,15) +
@@ -106,7 +126,7 @@ lwc <- ggplot(chem_canop, aes(x = lwc, color = Subregion)) + geom_density(linewi
 lwc
 
 # Leaf thickness distribution by subregion
-thick <- ggplot(chem_canop, aes(x = leaf_thickness_mm, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
+thick <- ggplot(leafstruc, aes(x = leaf_thickness_mm, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
   xlab('Thickness') + 
   scale_color_brewer(palette = "Dark2") +
   xlim(0,3) +
@@ -114,7 +134,7 @@ thick <- ggplot(chem_canop, aes(x = leaf_thickness_mm, color = Subregion)) + geo
 thick
 
 # Length to width ratio (lwr) by subregion
-lwr <- ggplot(chem_canop, aes(x = lwr, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
+lwr <- ggplot(leafstruc, aes(x = lwr, color = Subregion)) + geom_density(linewidth = 1) + theme_classic() +
   xlab('Leaf length to width ratio') + 
   scale_color_brewer(palette = "Dark2") +
   xlim(0,40) +
@@ -155,8 +175,8 @@ ggsave(filename = paste0(figpath, 'foliar_summary_plot_struct.jpeg'), plot = com
 # Figure summarizing growth form tallies
 # Subset just the relevant binary columns
 growth_types <- spectrait[, c("herb", 'geophyte', 'graminoid','low_shrub', 'mid_shrub',
-                             'tall_shrub','tree', 'scrambler','liana','hemiparasite',
-                             'parasite')]
+                             'tall_shrub','tree', 'scrambler','liana'
+                             )]
 
 # Sum each column to get the count of species per category
 type_counts <- colSums(growth_types)
@@ -248,33 +268,40 @@ month_poll_counts <- expanded_filtered %>%
     month_label = factor(month.abb[months], levels = month.abb)
   )
 
-flower_phen <- ggplot(month_poll_counts,
-       aes(x = month_label, y = n, fill = pollinator)) +
-  geom_bar(stat = "identity") +
-  coord_polar(start = 0) +
+# old polar figure
+# flower_phen <- ggplot(month_poll_counts,
+#        aes(x = month_label, y = n, fill = pollinator)) +
+#   geom_bar(stat = "identity") +
+#   coord_polar(start = 0) +
+#   scale_fill_brewer(palette = "Set1") +
+#   labs(
+#    # title = "Flowering Abundance by Pollination Syndrome",
+#     x = "", y = "Species Count", fill = "Pollinator"
+#   ) +
+#   theme_minimal() +
+#   theme(
+#     axis.text.y = element_blank(),
+#     axis.text.x = element_text(size = 14, face = "bold")
+#   )
+# 
+# flower_phen <- flower_phen +
+#   theme(text = element_text(size =20),
+#    legend.position = 'bottom',  # Adjust position inside plot (x, y from 0 to 1)
+#     legend.background = element_rect(fill = "white", color = NA),
+#     legend.title = element_text(size = 16),
+#     legend.text = element_text(size = 16)
+#   ) +
+#   guides(fill = guide_legend(nrow = 3, byrow = TRUE))
+
+flower_phen_prop <- ggplot(month_poll_counts,
+                           aes(x = month_label, y = n, fill = pollinator)) +
+  geom_bar(stat = "identity", position = "fill") +
   scale_fill_brewer(palette = "Set1") +
-  labs(
-   # title = "Flowering Abundance by Pollination Syndrome",
-    x = "", y = "Species Count", fill = "Pollinator"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.y = element_blank(),
-    axis.text.x = element_text(size = 14, face = "bold")
-  )
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "", y = "Proportion of species", fill = "Pollinator") +
+  theme_minimal()
 
-
-flower_phen <- flower_phen +
-  theme(text = element_text(size =20),
-   legend.position = 'bottom',  # Adjust position inside plot (x, y from 0 to 1)
-    legend.background = element_rect(fill = "white", color = NA),
-    legend.title = element_text(size = 16),
-    legend.text = element_text(size = 16)
-  ) +
-  guides(fill = guide_legend(nrow = 3, byrow = TRUE))
-
-
-print(flower_phen)
+print(flower_phen_prop)
 
 # Figure summarizing leaf tallies
 
@@ -373,7 +400,7 @@ flam_disp
 
 library(patchwork)
 
-combined_test <- (growth_form_plot + leaf_form_plot) / (flam_disp + flower_phen) +
+combined_test <- (growth_form_plot + leaf_form_plot) / (flam_disp + flower_phen_prop) +
   #plot_layout(guides = 'collect') &
   theme(text = element_text(size = 12, family = "Arial"))
 
@@ -433,6 +460,7 @@ p1 <- ggplot() +
     color = "black",
     linewidth = 1.2
   ) +
+  ylim(0, 95) +
   labs(x = "Wavelength (nm)", y = "Reflectance (%)") +
   theme_minimal() +
   theme(text = element_text(size = 20))
@@ -472,9 +500,10 @@ p3 <- ggplot(grouped_median, aes(x = wavelength, y = median, color = subregion))
        x = "Wavelength (nm)",
        y = "Reflectance (%)",
        color = "Subregion") +
+  ylim(0, 95) +
   theme_minimal() +
   theme(text = element_text(size = 20),
-        legend.position = c(0.8,0.3),#'bottom',  # Adjust position as needed
+        legend.position = c(0.8,0.25),#'bottom',  # Adjust position as needed
         legend.background = element_rect(fill = "white", color = "gray80"),
         legend.title = element_text(size = 20),
         legend.text = element_text(size = 16)) +
@@ -616,55 +645,66 @@ write_sf(releve_sf_output, 'GCFR_Traits/Spatial_Data/sp_rich_releve.geojson', de
 
 # summary numbers #####
 
-# Describe the number of structural leaf and twig traits measured 
-colnames(chem_canop)
-
-chem_canopflat <- purrr::flatten_dbl(chem_canop[,16:30])
-missingchem_canop <- which(is.na(chem_canopflat) == TRUE)
-
-chem_canoptraitobs <- chem_canopflat[-missingchem_canop]
-
-# include pubescence category from leafstruc traits
-pub_complete <- leafstruc$pubescence %>% na.omit()
-
-# number of measured and derived structural
-print(length(chem_canoptraitobs) + length(pub_complete))
-
-# number of unique species from chem_canop traits
-length(unique(chem_canop$scientific_name_WFO))
-
-# number of unique families from chem_canop traits
-length(unique(chem_canop$family_WFO))
-
-# number of average replicates and s.d./range
-chem_canop_count <- chem_canop %>% group_by(scientific_name_WFO, Subregion) %>%
-  summarise(SampleCounts = n()) %>% ungroup()
-
-# check variation by region
-chem_canop_count %>% group_by(Subregion)   %>% summarise(mean = mean(SampleCounts))
-
-# overall summaries
-median(chem_canop_count$SampleCounts)
-mean(chem_canop_count$SampleCounts)
-sd(chem_canop_count$SampleCounts)
-range(chem_canop_count$SampleCounts)
-
-#### Describe the number of canopy structural traits measured ####
+# Describe the number of structural leaf and twig traits measured ####
 colnames(leafstruc)
 
-leafstruccanopyflat <- purrr::flatten_dbl(leafstruc[,c(14,17,18)])
-missingcanopyflat <- which(is.na(leafstruccanopyflat) == TRUE)
+leaf_strucflat <- purrr::flatten_dbl(leafstruc[,15:29])
+missingleaf_struc <- which(is.na(leaf_strucflat) == TRUE)
 
-leafstruccanopytraitobs <- leafstruccanopyflat[-missingcanopyflat]
+leaf_structraitobs <- leaf_strucflat[-missingleaf_struc]
 
-print(length(leafstruccanopytraitobs))
+# include pubescence category from leafstruc traits
+pub_complete <- chem_canop$pubescence %>% na.omit()
 
-# number of average replicates and s.d./rangef
-leafstruc_count <- leafstruc %>% group_by(scientific_name_WFO, Subregion) %>%
+# number of measured and derived structural
+print(length(leaf_structraitobs) + length(pub_complete))
+# number of unique species from chem_canop traits
+length(unique(leafstruc$scientific_name_WFO))
+
+# number of unique families from chem_canop traits
+length(unique(leafstruc$family_WFO))
+
+# number of average replicates and s.d./range
+leaf_struc_count <- leafstruc %>% group_by(scientific_name_WFO, Subregion) %>%
   summarise(SampleCounts = n()) %>% ungroup()
 
 # check variation by region
-leafstruc_count %>% group_by(Subregion)   %>% summarise(mean = mean(SampleCounts))
+leaf_struc_count %>% group_by(Subregion)   %>% summarise(mean = mean(SampleCounts))
+
+# overall summaries
+median(leaf_struc_count$SampleCounts)
+mean(leaf_struc_count$SampleCounts)
+sd(leaf_struc_count$SampleCounts)
+range(leaf_struc_count$SampleCounts)
+
+# highest / lowest species for key traits
+summary_struc <- leafstruc %>%
+  select(scientific_name_WFO, lma, lwr, lwc, succulence, leaf_thickness_mm) %>%
+  pivot_longer(-scientific_name_WFO, names_to = "trait", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(trait) %>%
+  slice(c(which.min(value), which.max(value))) %>%
+  mutate(type = c("min", "max")) %>%
+  ungroup()
+summary_struc
+View(summary_struc)
+
+#### Describe the number of canopy structural traits measured ####
+colnames(chem_canop)
+
+canopyflat <- purrr::flatten_dbl(chem_canop[,c(14,17,18)])
+missingcanopyflat <- which(is.na(canopyflat) == TRUE)
+
+canopyflattraitobs <- canopyflat[-missingcanopyflat]
+
+print(length(canopyflattraitobs))
+
+# number of average replicates and s.d./rangef
+leafstruc_count <- leafstruc %>% group_by(scientific_name_WFO, subregion) %>%
+  summarise(SampleCounts = n()) %>% ungroup()
+
+# check variation by region
+leafstruc_count %>% group_by(subregion)   %>% summarise(mean = mean(SampleCounts))
 
 # overall summaries
 median(leafstruc_count$SampleCounts)
@@ -673,7 +713,7 @@ sd(leafstruc_count$SampleCounts)
 range(leafstruc_count$SampleCounts)
 
 #### Describe the number of elemental/isotope traits measured ####
-leafstrucelemflat <- purrr::flatten_dbl(leafstruc[,20:24])
+leafstrucelemflat <- purrr::flatten_dbl(chem_canop[,20:24])
 missingelemflat <- which(is.na(leafstrucelemflat) == TRUE)
 
 leafstrucelemtraitobs <- leafstrucelemflat[-missingelemflat]
@@ -711,7 +751,9 @@ mean(spec_count$SampleCounts)
 sd(spec_count$SampleCounts)
 range(spec_count$SampleCounts)
 
-spec_count_rep <- vnir %>% group_by(unique_ID, subregion) %>%
+spec_count_rep <- vnir %>% group_by(sample_ID, subregion) %>%
   summarise(SampleCounts = n()) %>% ungroup()
 
 mean(spec_count_rep$SampleCounts)
+
+

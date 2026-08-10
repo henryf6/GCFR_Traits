@@ -25,11 +25,11 @@ releve <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/R
 # The backbone is not available via this git repo since it is nearly 1 gb in size. 
 # The latest version can be accessed here:
 #   https://www.worldfloraonline.org/downloadData;jsessionid=16FC96696DE5D11981026F44546F3E96
-wfo_taxonomy <- read_tsv("/Users/henryfrye/Dropbox/Intellectual_Endeavours/Wisconsin/ArboretumPhyloPheno/LngArbCode/PhylogeneticCode/classification_v.2023.12.csv")
+wfo_taxonomy <- read_tsv("/Volumes/Enspec/users/henry/WFO_backbones/classification_v.2026.6.csv")
 
 # Make minor taxonomic edits by hand given input from botanist (RT) ####
 
-# For labtait, fieldtrait, and vnirspec adjust the original species name entry as follows:
+# For labtait, fieldtrait, and vnirspec adjust the original species name entry as follows [per Ross Turner checks]
 #   1) replace Erica areolata at 710_17_langeberg as just Erica, E. areolata is a narrow endemic in a different region
 #   2) The accepted name for Erica demissa is Erica oresbia for 703_8_baviaanskloof, 718_9_baviaanskloof, and 
 #   701_59_baviaanskloof ... the WFO match does not perform well here. 
@@ -60,6 +60,26 @@ vnirspec <- vnirspec %>% mutate(finalname = case_when(
   NewUID == '701_59_BK' & finalname == 'Erica demissa' ~ 'Erica oresbia',
   NewUID == '711_18_BK' & finalname == 'Erica sparrmannii' ~ 'Erica sparrmanii',
   TRUE ~ finalname
+))
+
+
+# add the sp./species suffix-stripping regex to releve, same as labtrait/fieldtrait
+# (this was previously missing for releve, which is why these names failed to 
+# resolve against WFO in both the original 2013 pipeline and the first WFO pass)
+releve <- releve %>% mutate(finalname_pre = ifelse(
+  grepl("\\bsp\\.?\\b|\\bsp\\s*\\d+\\b|\\bspecies\\b", Species, ignore.case = TRUE) &
+    !grepl("\\bsubsp\\b|\\bvar\\b|\\bcf\\b", Species, ignore.case = TRUE),
+  gsub("\\s+(sp\\.?\\s*\\d*|species).*", "", Species, ignore.case = TRUE),
+  Species
+))
+
+# manual corrections for names WFO.match wont' resolve, verified by hand
+releve <- releve %>% mutate(finalname_pre = case_when(
+  finalname_pre %in% c("Crotularia") ~ "Crotalaria",              # from "Crotularia sp.", "Crotularia sp. (rank)"
+  finalname_pre == "Anacampceros"    ~ "Anacampseros",
+  finalname_pre == "Stratiola"       ~ "Struthiola",               # HR838, likely field dictation error
+  finalname_pre == "Euphorbia slap stems" ~ "Euphorbia",
+  TRUE ~ finalname_pre
 ))
 
 # Data checks lab traits (these are the foliar chemistry and canopy data) ####
@@ -106,6 +126,31 @@ fieldtrait <- fieldtrait %>% mutate(finalname = case_when(
   TRUE ~ finalname
 ))
 
+# standardize taxon names for missing spaces and periods
+standardize_taxon_names <- function(x) {
+  # Add a period after subsp/var/cf when missing (but not when already present)
+  x <- gsub("\\b(subsp|var|cf)\\b(?!\\.)", "\\1.", x, perl = TRUE)
+  
+  # Normalize spacing after the abbreviation period to exactly one space
+  # (catches "cf.crassa" -> "cf. crassa" and any double-spaced cases)
+  x <- gsub("\\b(subsp|var|cf)\\.\\s*", "\\1. ", x, perl = TRUE)
+  
+  # Collapse any incidental double spaces / trailing whitespace introduced above
+  x <- trimws(gsub("\\s+", " ", x))
+  
+  # Flag plot-based placeholder names (e.g. "Plot70sp1") as unknown species
+  x <- ifelse(grepl("^Plot\\d+sp\\d*$", x, ignore.case = TRUE), "unknown species", x)
+  
+  x
+}
+
+labtrait$finalname   <- standardize_taxon_names(labtrait$finalname)
+fieldtrait$finalname <- standardize_taxon_names(fieldtrait$finalname)
+vnirspec$finalname   <- standardize_taxon_names(vnirspec$finalname)
+
+releve$Species   <- standardize_taxon_names(releve$Species)
+spectrait$species <- standardize_taxon_names(spectrait$species)
+spectrait$genus_species_GM <- standardize_taxon_names(spectrait$genus_species_GM)
 
 sp_id_misalign_field <- fieldtrait %>% dplyr::filter(! finalname %in% gm_taxa$Taxon)
 length(unique((sp_id_misalign_field$finalname)))
@@ -201,18 +246,41 @@ write.csv(vnir_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Dat
 
 # WFO taxon harmonization for releve data ####
 
-NameCheck_releve <- WFO.match(spec.data = releve, WFO.data= wfo_taxonomy, spec.name = "Species",
+NameCheck_releve <- WFO.match(spec.data = releve, WFO.data= wfo_taxonomy, spec.name = "finalname_pre",
                             Fuzzy.min = TRUE)
 Name_single_releve <- WFO.one(NameCheck_releve)
 
-NameCheck_sel_releve <- Name_single_releve %>% dplyr::select(Species.ORIG, scientificName, family, scientificNameAuthorship)
+NameCheck_sel_releve <- Name_single_releve %>% 
+  dplyr::select(finalname_pre.ORIG, scientificName, family, scientificNameAuthorship)
 
 NameCheck_mini_simple_releve <- NameCheck_sel_releve %>% distinct()
 
-releve_wfo <- left_join(releve, NameCheck_mini_simple_releve, by = c('Species' = 'Species.ORIG'))
+releve_wfo <- left_join(releve, NameCheck_mini_simple_releve, by = c('finalname_pre' = 'finalname_pre.ORIG'))
 
-releve_taxa_cleaned <- releve_wfo %>% rename('ScientificName_WFO' = scientificName, 'Family_WFO' = family) %>% 
-  dplyr::select(Species, Family, ScientificName_WFO, scientificNameAuthorship, Family_WFO, Plot:RelPercCover)
+releve_wfo <- releve_wfo %>%
+  mutate(
+    family = case_when(
+      !is.na(family) ~ family,
+      str_detect(finalname_pre, "Mesembryanthemaceae") ~ "Mesembryanthemaceae",
+      finalname_pre == "Orchid" ~ "Orchidaceae",  # post-suffix-strip, "Orchid sp" -> "Orchid"
+      TRUE ~ family
+    ),
+    recovery_status = case_when(
+      !is.na(scientificName) ~ "wfo_matched",
+      Species == "27987" ~ "flagged_non_taxonomic_entry",
+      str_detect(finalname_pre, "Mesembryanthemaceae") | finalname_pre == "Orchid" ~ "recovered_family_only",
+      TRUE ~ "unresolved_morphotype"
+    )
+  )
 
-write.csv(releve_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/releve_taxa_clean.csv',row.names= FALSE)
+# quick sanity check before finalizing -- confirm counts look like what you expect,
+# and eyeball anything new that fell into unresolved_morphotype
+releve_wfo %>% count(recovery_status)
+releve_wfo %>% filter(recovery_status == "unresolved_morphotype") %>% distinct(Species, finalname_pre)
 
+releve_taxa_cleaned <- releve_wfo %>% 
+  rename('ScientificName_WFO' = scientificName, 'Family_WFO' = family) %>% 
+  dplyr::select(Species, ScientificName_WFO, scientificNameAuthorship, Family_WFO, 
+                recovery_status, plot:RelPercCover)
+
+write.csv(releve_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/releve_taxa_clean.csv', row.names = FALSE)

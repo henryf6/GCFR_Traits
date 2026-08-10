@@ -1,9 +1,9 @@
 "Column.Name","Description","Variable.class","Variable.Range.Categories","Units","Number.missing"
-"unique_ID",NA,"character","619_1_HK - 825_9_HTR",NA,0
+"sample_ID",NA,"character","619_1_HK - 825_9_HTR",NA,0
 "scientific_name_original",NA,"character","Abutilon sonneratianum - Zygophyllum procumbens",NA,0
 "family_MG",NA,"character","Acanthaceae - Zygophyllaceae",NA,0
 "scientific_name_WFO",NA,"character","Abutilon sonneratianum - Zygophyllum procumbens",NA,0
-"scientific_name_authorship",NA,"character","(A.DC.) F.White - Willd.",NA,1
+"scientific_name_authorship_WFO",NA,"character","(A.DC.) F.White - Willd.",NA,1
 "family_WFO",NA,"character","Acanthaceae - Zygophyllaceae",NA,0
 "latitude",NA,"numeric","-34.36736 - -31.27247",NA,0
 "longitude",NA,"numeric","18.38403 - 24.34838",NA,0
@@ -510,4 +510,5 @@
 "X947",NA,"numeric","20.57996061 - 84.14083683",NA,0
 "X948",NA,"numeric","20.42796352 - 83.95071221",NA,0
 "X949",NA,"numeric","20.36271701 - 83.84322189",NA,0
+"scientific_name_authorship",NA,"character","(A.DC.) F.White - Willd.",NA,1
 "year",NA,"numeric","2010 - 2014",NA,0
