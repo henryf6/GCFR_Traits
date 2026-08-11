@@ -390,22 +390,36 @@ spectrait_polished <- spectrait %>% rename('scientific_name_original' = 'species
                                              'family_WFO' = 'Family_WFO') %>%
                                             select(!lifecycle_POSA)
 
+# Convert family MG to sentence case
+spectrait_polished$family_MG <- str_to_title(spectrait_polished$family_MG)
+
 # Remove extra column (family designation based on Plants of South Africa)
 spectrait_polished <- spectrait_polished %>% dplyr::select(!family_POSA)
 
 # Correct authority for Brunsvigia nervosa
 spectrait_polished <- spectrait_polished %>% mutate(scientific_name_authorship_WFO = case_when(
   scientific_name_WFO == 'Brunsvigia nervosa' ~ '(Poir.) Masw.',
-  TRUE ~ scientific_name_WFO
+  TRUE ~ scientific_name_authorship_WFO
 ))
 
 # Remove [] from authority column
-spectrait_polished$scientific_name_authorship <- gsub("\\[|\\]", "", spectrait_polished$scientific_name_authorship_WFO)
+spectrait_polished$scientific_name_authorship_WFO <- gsub("\\[|\\]", "", spectrait_polished$scientific_name_authorship_WFO)
 
 # Investigate blank scientific_name_original rows
 spectrait_polished[which(spectrait_polished$scientific_name_original == ''),]
 
-# Remove the wonky Albuca cf. namaquensis entry... it doesn't appear in the other datasets
+
+# Provenance: Albuca cf. namaquensis removal
+albuca_removal_log <- spectrait_polished %>%
+  filter(scientific_name_MG == 'Albuca cf. namaquensis') %>%
+  mutate(removal_date = Sys.Date(),
+         removal_reason = "does not appear in other datasets; treated as a spurious/unmatched entry")
+write_csv(albuca_removal_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/albuca_namaquensis_removal_log.csv")
+
+# Remove the Albuca cf. namaquensis entry
+spectrait_polished <- spectrait_polished %>%
+  dplyr::filter(scientific_name_MG != 'Albuca cf. namaquensis')
+
 spectrait_polished <- spectrait_polished %>% dplyr::filter(scientific_name_MG != 'Albuca cf. namaquensis')
 
 # Convert blank entries for lifecycle_POSA to NA; column removed, now deprecated.
@@ -413,10 +427,108 @@ spectrait_polished <- spectrait_polished %>% dplyr::filter(scientific_name_MG !=
 # spectrait_polished <- spectrait_polished %>% mutate(lifecycle_POSA =  na_if(lifecycle_POSA, "")) # Convert "" to NA
 
 # Check cases where both annual and perennial selected
-subset_df <- spectrait_polished %>% filter(perennial == 1, annual == 1)
+ann_per_subset_df <- spectrait_polished %>% filter(perennial == 1, annual == 1)
+# these are listed as likely polymorphic in the flora references
 
-# Check evergreen and deciduous status
-subset_df <- spectrait_polished %>% filter(evergreen == 0, deciduous == 0)
+# Workflow: NA-recode records with 0/0 evergreen-deciduous (reviewer comment: 
+# "not evergreen and not deciduous" for 101 names should be NA, not 0/0)
+
+evergreen_deciduous_na_log <- spectrait_polished %>%
+  filter(evergreen == 0, deciduous == 0) %>%
+  select(scientific_name_original, scientific_name_MG, scientific_name_WFO,
+         evergreen, deciduous) %>%
+  mutate(recode_date = Sys.Date(),
+         recode_reason = "both evergreen and deciduous = 0; treated as missing data per reviewer comment")
+
+# sanity check against the 101 names the reviewer cites
+nrow(evergreen_deciduous_na_log)
+
+write_csv(evergreen_deciduous_na_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/evergreen_deciduous_na_recode_log.csv")
+
+spectrait_polished <- spectrait_polished %>%
+  mutate(
+    evergreen  = if_else(evergreen == 0 & deciduous == 0, NA_real_, evergreen),
+    deciduous  = if_else(evergreen == 0 & deciduous == 0, NA_real_, deciduous)
+  )
+
+# Sanity check: any records where evergreen AND deciduous are both 1?
+# (the opposite data-quality issue — can't logically be both)
+
+evergreen_deciduous_conflict_check <- spectrait_polished %>%
+  filter(evergreen == 1, deciduous == 1) %>%
+  select(scientific_name_original, scientific_name_MG, scientific_name_WFO,
+         evergreen, deciduous)
+
+nrow(evergreen_deciduous_conflict_check)
+evergreen_deciduous_conflict_check
+
+# Workflow: recode deciduous 1 -> 0 for records with evergreen == 1 & deciduous == 1
+# Rationale: re-checked source flora entries for all 21 affected species; no textual
+# support for deciduousness found in any case. For 8/21 (Elegia spp. + Euphorbia hamata),
+# pattern is consistent with a dioecious/deciduous text-mining mix-up (all dioecious == 1).
+# Remaining 13 lack a clear mechanism but show the same absence of flora support.
+
+evergreen_deciduous_conflict_log <- spectrait_polished %>%
+  filter(evergreen == 1, deciduous == 1) %>%
+  select(scientific_name_original, scientific_name_MG, scientific_name_WFO,
+         evergreen, deciduous, dioecious, monoecious) %>%
+  mutate(
+    recode_date = Sys.Date(),
+    recode_reason = "evergreen & deciduous both = 1; re-checked flora, no support for deciduous; recoded deciduous to 0",
+    likely_mechanism = if_else(dioecious == 1, "dioecious/deciduous text-mining mix-up (unconfirmed)", "unknown")
+  )
+
+nrow(evergreen_deciduous_conflict_log)  # should be 21
+
+write_csv(evergreen_deciduous_conflict_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/evergreen_deciduous_conflict_recode_log.csv")
+
+# implement change
+spectrait_polished <- spectrait_polished %>%
+  mutate(
+    deciduous = if_else(evergreen == 1 & deciduous == 1, 0, deciduous)
+  )
+
+# Workflow: recode lvs_intermediate = 2 -> 1 for Carpha glomerata
+# Single erroneous value (n=1) found via reviewer comment; hand-checked against
+# flora entry, confirmed leaf shape is intermediate (should be binary flag = 1)
+
+lvs_intermediate_stray_value_log <- spectrait_polished %>%
+  filter(lvs_intermediate == 2) %>%
+  select(scientific_name_original, scientific_name_MG, scientific_name_WFO,
+         leaf_type, lvs_linear, lvs_intermediate, lvs_oval, lvs_compound,
+         lvs_lobed, lvs_dissected) %>%
+  mutate(recode_date = Sys.Date(),
+         recode_reason = "lvs_intermediate erroneously coded as 2; hand-checked against flora, confirmed intermediate shape; recoded to 1")
+
+nrow(lvs_intermediate_stray_value_log)  # should be 1
+
+write_csv(lvs_intermediate_stray_value_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/lvs_intermediate_stray_value_recode_log.csv")
+
+spectrait_polished <- spectrait_polished %>%
+  mutate(lvs_intermediate = if_else(lvs_intermediate == 2, 1, lvs_intermediate))
+
+# Workflow: rename lvs_intermediate -> lvs_shape_other
+# Reviewer comment: "intermediate" implies a discrete botanical shape class, but this
+# column is a residual/catch-all bin for shapes not classified as linear or oval during
+# text-mining (e.g. lanceolate, ovate, elliptic, oblanceolate, oblong, and combinations
+# thereof). Renamed for clarity.
+
+spectrait_polished <- spectrait_polished %>%
+  rename(lvs_shape_other = lvs_intermediate)
+
+# confirm clean binary now
+table(spectrait_polished$lvs_shape_other)
+
+# Provenance: seasonally_apparent / seasonally_identifiable harmonization
+seasonal_harmonize_log <- spectrait_polished %>%
+  filter(seasonally_apparent == 1, seasonally_identifiable == 0) %>%
+  select(scientific_name_original, scientific_name_MG, seasonally_apparent, seasonally_identifiable) %>%
+  mutate(recode_date = Sys.Date(),
+         recode_reason = "seasonally_apparent = 1 implies seasonally_identifiable should also = 1 (species with a dormant season are necessarily unidentifiable during that period); recoded 0 -> 1")
+write_csv(seasonal_harmonize_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/seasonal_apparent_identifiable_harmonize_log.csv")
+
+spectrait_polished <- spectrait_polished %>%
+  mutate(seasonally_identifiable = if_else(seasonally_apparent == 1 & seasonally_identifiable == 0, 1, seasonally_identifiable))
 
 # Clean seasonally apparent/identifiable (if you are apparent you should be indentifiable)
 spectrait_polished %>% filter(seasonally_apparent == 1, seasonally_identifiable== 0)
@@ -424,10 +536,46 @@ spectrait_polished %>% filter(seasonally_apparent == 1, seasonally_identifiable=
 spectrait_polished <- spectrait_polished %>%
   mutate(seasonally_identifiable = if_else(seasonally_apparent == 1 & seasonally_identifiable == 0, 1, seasonally_identifiable))
 
+# Provenance: succulent harmonization from stem_succulent / leaf_succulent
+succulent_harmonize_log <- spectrait_polished %>%
+  filter((stem_succulent == 1 & succulent == 0) | (leaf_succulent == 1 & succulent == 0)) %>%
+  select(scientific_name_original, scientific_name_MG, succulent, leaf_succulent, stem_succulent) %>%
+  mutate(recode_date = Sys.Date(),
+         recode_reason = "leaf_succulent or stem_succulent = 1 implies succulent should also = 1; recoded 0 -> 1")
+write_csv(succulent_harmonize_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/succulent_harmonize_log.csv")
+
+spectrait_polished <- spectrait_polished %>%
+  mutate(succulent = if_else(stem_succulent == 1 & succulent == 0, 1, succulent),
+         succulent = if_else(leaf_succulent == 1 & succulent == 0, 1, succulent))
+
 # Clean succulent status
 spectrait_polished <- spectrait_polished %>%
   mutate(succulent = if_else(stem_succulent == 1 & succulent == 0, 1, succulent),
          succulent = if_else(leaf_succulent == 1 & succulent == 0, 1, succulent),)
+
+# Provenance: flower_begin recoding
+flower_begin_recode_log <- spectrait_polished %>%
+  filter(flower_begin %in% c('A','E','H','I','R','?','')) %>%
+  select(scientific_name_original, scientific_name_MG, flower_begin) %>%
+  mutate(recode_date = Sys.Date(),
+         recode_reason = case_when(
+           flower_begin == 'A' ~ "'A' recoded to 'All year'",
+           flower_begin == 'E' ~ "'E' recoded to 'Almost all year'",
+           flower_begin == 'I' ~ "'I' recoded to 'Nov' per G&M flora entry (Nov.-May range)",
+           flower_begin == 'R' ~ "'R' recoded to 'Oct'; flora entry gives Oct.-Nov. range, used the more expansive (earlier) bound",
+           flower_begin %in% c('H','?','') ~ "code meaning could not be determined; recoded to NA",
+           TRUE ~ NA_character_))
+write_csv(flower_begin_recode_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/flower_begin_recode_log.csv")
+
+spectrait_polished <- spectrait_polished %>% mutate(
+  flower_begin = na_if(flower_begin,'H'),
+  flower_begin = na_if(flower_begin,'?'),
+  flower_begin = na_if(flower_begin,''),
+  flower_begin = case_when( flower_begin == 'A' ~ 'All year',
+                            flower_begin == 'E' ~ 'Almost all year',
+                            flower_begin == 'I' ~ 'Nov',
+                            flower_begin == 'R' ~ 'Oct',
+                            TRUE ~ flower_begin))
 
 # Clean flower begin variable
 unique(spectrait_polished$flower_begin)
@@ -471,14 +619,6 @@ unique(spectrait_polished$flower_end_alt)
 spectrait_polished <- spectrait_polished %>% mutate(
   flower_end_alt = na_if(flower_end_alt,''))
 
-# Clean up functional twig column
-unique(spectrait_polished$functional_twig)
-
-spectrait_polished <- spectrait_polished %>% mutate(
-  functional_twig = na_if(functional_twig,''),
-  functional_twig = case_when( functional_twig == '0' ~ 'no',
-  TRUE ~ functional_twig))
-
 # Clean up leaf type column
 unique(spectrait_polished$leaf_type)
 spectrait_polished <- spectrait_polished %>% mutate(
@@ -491,24 +631,122 @@ spectrait_polished <- spectrait_polished %>% mutate(
                          leaf_type == 'microphylls' ~ 'microphyll',
                                TRUE ~ leaf_type))
 
-# check no leaf and leaf type
-subset_data1 <- spectrait_polished %>% filter(virtually_no_leaves == 1, leaf_type != 'none' )
-write.csv(subset_data1, '/Users/henryfrye/Downloads/leaf_type_and_virtually_no_leaves.csv')
 
-subset_data2 <- spectrait_polished %>% filter(virtually_no_leaves == 1, functional_leaf == 'leaf' )
-write.csv(subset_data2, '/Users/henryfrye/Downloads/functional_leaf_and_virtually_no_leaves.csv')
-# Cassytha ciliolata, Cassytha filiformis should be culm stem,
-# Juncus kraussii, Soroveta ambigua ditto
+# Fix 1: virtually_no_leaves 0 -> 1 where functional_leaf indicates leafless/culm-based photosynthesis
+vnl_from_functional_leaf_log <- spectrait_polished %>%
+  filter(functional_leaf %in% c("culm_stem", "none"), virtually_no_leaves == 0) %>%
+  select(scientific_name_original, family_MG, leaf_type, functional_leaf, virtually_no_leaves) %>%
+  mutate(recode_date = Sys.Date(),
+         recode_reason = "functional_leaf indicates culm/stem-based photosynthesis; virtually_no_leaves recoded 0 -> 1 to match")
 
- 
+nrow(vnl_from_functional_leaf_log)  # should be 9
+write_csv(vnl_from_functional_leaf_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/virtually_no_leaves_from_functional_leaf_log.csv")
+
+spectrait_polished <- spectrait_polished %>%
+  mutate(virtually_no_leaves = if_else(functional_leaf %in% c("culm_stem", "none") & virtually_no_leaves == 0,
+                                       1, virtually_no_leaves))
+
+# Fix 2: functional_leaf recode for hand-checked reverse conflicts, and virtually_no_leaves
+# recode for Conophytum minusculum (opposite direction: genus-level check within Aizoaceae
+# supports virtually_no_leaves = 0, not a functional_leaf correction)
+reverse_conflict_hand_check_log <- spectrait_polished %>%
+  filter(scientific_name_original %in% c("Cassytha ciliolata", "Cassytha filiformis",
+                                         "Cuscuta africana", "Juncus kraussii",
+                                         "Soroveta ambigua", "Indigofera ionii",
+                                         "Conophytum minusculum")) %>%
+  select(scientific_name_original, family_MG, leaf_type, functional_leaf, virtually_no_leaves) %>%
+  mutate(recode_date = Sys.Date(),
+         field_recoded = case_when(
+           scientific_name_original == "Conophytum minusculum" ~ "virtually_no_leaves",
+           TRUE ~ "functional_leaf"),
+         recode_reason = case_when(
+           scientific_name_original == "Indigofera ionii" ~
+             "functional_leaf 'leaf' -> 'mixed'; matches worked example in original 2014 documentation (leaves present only on young growth)",
+           scientific_name_original == "Conophytum minusculum" ~
+             "virtually_no_leaves 1 -> 0; genus is highly leaf-succulent (fused leaf pairs), and all other Aizoaceae in dataset coded virtually_no_leaves = 0; treated as consistent leaf-bearing morphology rather than leafless",
+           TRUE ~ "functional_leaf recoded to 'culm_stem'; hand-checked against flora description / growth form"))
+
+write_csv(reverse_conflict_hand_check_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/functional_leaf_virtually_no_leaves_hand_check_log.csv")
+
+spectrait_polished <- spectrait_polished %>%
+  mutate(
+    functional_leaf = case_when(
+      scientific_name_original == "Indigofera ionii" ~ "mixed",
+      scientific_name_original %in% c("Cassytha ciliolata", "Cassytha filiformis",
+                                      "Cuscuta africana", "Juncus kraussii",
+                                      "Soroveta ambigua") ~ "culm_stem",
+      TRUE ~ functional_leaf),
+    virtually_no_leaves = if_else(scientific_name_original == "Conophytum minusculum",
+                                  0, virtually_no_leaves)
+  )
+
+# sanity check: should now return 0 rows both directions
+spectrait_polished %>% filter(functional_leaf %in% c("culm_stem", "none"), virtually_no_leaves == 0) %>% nrow()
+spectrait_polished %>% filter(functional_leaf == "leaf", virtually_no_leaves == 1) %>% nrow()
+
+# ---- Retire leaf_type; replace with reliable structural binary flags ----
+# Rationale: comparison of the 2014 dated documentation (1,816 species; 1,114 "Leaf",
+# 671 "No Data") against the source CSVs feeding this pipeline shows leaf_type's "leaf"
+# value grew from 1,114 to 1,776/1,816 records with no corresponding code change -
+# consistent with an undocumented manual backfill (likely undergraduate RA work per
+# 2014 notes) that defaulted missing classifications to "leaf" rather than leaving them
+# NA. This cannot be distinguished from genuine keyword-confirmed "leaf" records in the
+# current data, so the "leaf" category is treated as unreliable. Frond/cladode/phyllode/
+# microphyll values were never subject to this default (they required a positive keyword
+# match) and are retained as explicit binary flags. functional_leaf (independently
+# compiled, field-informed) remains the authoritative source for leaf-presence status.
+
+# Provenance: archive full leaf_type column before removal
+leaf_type_removal_log <- spectrait_polished %>%
+  select(scientific_name_original, scientific_name_MG, scientific_name_WFO,
+         leaf_type, functional_leaf, virtually_no_leaves) %>%
+  mutate(archive_date = Sys.Date(),
+         removal_reason = "leaf_type 'leaf' value found to reflect an undocumented default fill, not a verified classification; column retired in favor of structural binary flags (frond/cladode/phyllode/microphyll) plus functional_leaf")
+
+write_csv(leaf_type_removal_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/leaf_type_full_archive_and_removal_log.csv")
+
+# Build reliable structural flags from leaf_type before dropping it
+spectrait_polished <- spectrait_polished %>%
+  mutate(
+    lvs_frond      = if_else(leaf_type == "frond", 1, 0),
+    lvs_cladode    = if_else(leaf_type == "cladode", 1, 0),
+    lvs_phyllode   = if_else(leaf_type == "phyllode", 1, 0),
+    lvs_microphyll = if_else(leaf_type == "microphyll", 1, 0)
+  )
+
+# sanity check: flag counts should match original keyword-confirmed leaf_type counts
+# (frond=19, cladode=18, phyllode=2, microphyll=1, per earlier table(leaf_type))
+colSums(spectrait_polished[c("lvs_frond","lvs_cladode","lvs_phyllode","lvs_microphyll")])
+
+# Drop leaf_type
+spectrait_polished <- spectrait_polished %>%
+  select(!leaf_type)
+
+# Provenance: flammability 'i' typo fix
+flammability_typo_log <- spectrait_polished %>%
+  filter(flammability == 'i') %>%
+  select(scientific_name_original, scientific_name_MG, flammability) %>%
+  mutate(recode_date = Sys.Date(),
+         recode_reason = "'i' is a typo for 'l' (low flammability); recoded")
+write_csv(flammability_typo_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/flammability_typo_recode_log.csv")
+
+spectrait_polished <- spectrait_polished %>% mutate(flammability = case_when(
+  flammability == 'i' ~ 'l',
+  TRUE ~ flammability))
+
 # fix flammability where i is a typo of l
 spectrait_polished <- spectrait_polished %>% mutate(flammability = case_when(
   flammability == 'i' ~ 'l',
   TRUE ~ flammability))
 
+# Provenance: functional_twig column removal
+functional_twig_removal_log <- spectrait_polished %>%
+  select(scientific_name_original, scientific_name_MG, functional_twig) %>%
+  mutate(removal_date = Sys.Date(),
+         removal_reason = "functional_twig was a Dimensions-project-specific designation per original 2014 documentation, not intended for general use; column removed")
+write_csv(functional_twig_removal_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/functional_twig_removal_log.csv")
 
-# Convert family MG to sentence case
-spectrait_polished$family_MG <- str_to_title(spectrait_polished$family_MG)
+spectrait_polished <- spectrait_polished %>% dplyr::select(!functional_twig)
 
 # Remove functional twig column as this was a project specific designation
 #   and not for general use
@@ -516,7 +754,7 @@ spectrait_polished <- spectrait_polished %>% dplyr::select(!functional_twig)
 which(spectrait_polished  %>% duplicated() == TRUE)
 
 # Write out polished file
-write.csv(spectrait_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/species_traits.csv',
+write_csv(spectrait_polished, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/species_traits.csv',
           row.names= FALSE)
 
 # Clean up vnir spectroscopy #####
@@ -584,38 +822,47 @@ vnirspec_polished <- vnirspec_polished %>% filter(X800 > 30)
 write.csv(vnirspec_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/vnir_spectra.csv',
           row.names= FALSE)
 
+# ==== Clean up releve data ====
 
-# Clean up releve data #####
+releve_polished <- releve %>% rename(
+  'scientific_name_original' = 'Species',
+  'scientific_name_WFO' = 'ScientificName_WFO',
+  'scientific_name_authorship_WFO' = 'scientificNameAuthorship',
+  'family_WFO' = 'Family_WFO',
+  'subregion' = 'site',
+  'abundance_class' = 'abund_class',
+  'plot_percent_cover' = 'PlotPercCov',
+  'relative_percent_cover' = 'RelPercCover'
+) 
 
-releve_polished <- releve %>% rename('scientific_name_original' = 'Species', # original designation
-                                         'family_MG' = 'Family', # match the order of the flora citation
-                                         'scientific_name_WFO' = 'ScientificName_WFO', # match other column name format
-                                         'scientific_name_authorship_WFO' = 'scientificNameAuthorship',
-                                         'family_WFO' = 'Family_WFO',
-                                         'plot' = 'Plot',
-                                         'year' = 'Year',
-                                         'subregion' = 'Site',
-                                         'percent_cover' = 'PercCover',
-                                         'abundance_class' = 'AbundClass',
-                                         'plot_percent_cover' = 'PlotPercCov',
-                                         'relative_percent_cover' = 'RelPercCover')
-                               
+releve_polished$scientific_name_authorship_WFO <- gsub("\\[|\\]", "", releve_polished$scientific_name_authorship_WFO)
 
-# Remove family MG column, does not have a proper join and can be removed since WFO information is largely redunant
-releve_polished <- releve_polished %>% select(!family_MG)
+# ---- Add cover_method column ----
+# Documents original field-recording protocol per subregion/year.
+older_subregions <- c('langeberg', 'cederberg', 'hangklip')
 
-# Remove [] from authority column
-releve_polished$scientific_name_authorship <- gsub("\\[|\\]", "", releve_polished$scientific_name_authorship_WFO)
+releve_polished <- releve_polished %>%
+  mutate(
+    cover_method = case_when(
+      subregion == 'cape_point' & year %in% c(1966, 1996) ~ "condensed_Acocks_abundance_class_only",
+      subregion == 'cape_point' & year == 2010 ~ "percent_cover_continuous",
+      subregion %in% older_subregions ~ "percent_cover_class_derived_from_Braun_Blanquet",
+      subregion == 'htr' & year %in% c(2004, 2013) ~ "percent_cover_class_from_Braun_Blanquet_Werger",
+      subregion == 'htr' & year == 2014 ~ "percent_cover_continuous",
+      subregion == 'baviaanskloof' ~ "percent_cover_continuous",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  relocate(cover_method, .after = abundance_class)
 
-# ---- Workflow3 addendum: zero percent_cover recode ----
-# Context: percent_cover == 0 values are not true absences (species is 
-# present in the releve, per raw field sheets) but reflect the botanist 
-# omitting a cover estimate for trace/minute individuals. Reassigning to 
-# 0.1, consistent with the minimum non-zero rung of the cover-abundance 
-# ordinal scale used elsewhere in this survey convention (e.g., Braun-
-# Blanquet-style minor-cover classes).
+stopifnot(sum(is.na(releve_polished$cover_method)) == 0)
 
-# 1. Isolate the affected rows for the provenance log, BEFORE any changes
+
+# ---- Zero percent_cover recode ----
+# percent_cover == 0 is not a true absence -- reflects the botanist omitting 
+# a cover estimate for trace/minute individuals. Reassign to 0.1, the minimum 
+# non-zero rung of the cover-abundance ordinal scale.
+
 zero_cover_log <- releve_polished %>%
   filter(percent_cover == 0) %>%
   mutate(
@@ -624,193 +871,71 @@ zero_cover_log <- releve_polished %>%
     recode_date = Sys.Date()
   )
 
-n_recoded <- nrow(zero_cover_log)
-message(glue::glue("Recoding {n_recoded} percent_cover values of 0 to 0.1"))
+message(glue::glue("Recoding {nrow(zero_cover_log)} percent_cover values of 0 to 0.1"))
 
-# 2. Apply the recode to the working dataframe
 releve_polished <- releve_polished %>%
-  mutate(
-    percent_cover = if_else(percent_cover == 0, 0.1, percent_cover)
-  )
+  mutate(percent_cover = if_else(percent_cover == 0, 0.1, percent_cover))
 
-# 3. Sanity check: confirm no zeros remain and no unintended rows changed
 stopifnot(sum(releve_polished$percent_cover == 0, na.rm = TRUE) == 0)
-stopifnot(nrow(zero_cover_log) == n_recoded)
 
-# 4. Write the log out for the repo (mirrors your outlier_review_flags.csv pattern)
 write_csv(zero_cover_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Quality_Check_Outputs/zero_cover_recode_log.csv")
 
-# check relationship between cape point abundance classes and percent cover
-releve %>%
-  filter(Site == 'cape_point', Year == 2010, !is.na(PercCover), !is.na(AbundClass)) %>%
-  ggplot(aes(x = factor(AbundClass), y = PercCover)) +
-  geom_jitter(alpha = 0.3, width = 0.2) +
-  scale_y_log10()
 
-# now deprecated:
-# Convert 1966/1996 Cape to perc cover, 1978 hangklip/ 1993 Langeberg/ Cederberg convert 
-#   back to original abundance class for copmletion,
-# older_subregions <- c('langeberg', 'cederberg', 'hangklip')
-# htr_cover_class_year <- c('2004','2013') # the 2014 htr plots were done on percent cover scale
-# old_cape_year <- c('1966', '1996')
-# 
-# releve_polished <- releve_polished %>% mutate(abundance_class = case_when(
-#   subregion %in% older_subregions & percent_cover == .1 ~ 0,
-#   subregion %in% older_subregions & percent_cover == 2.5 ~ 1,
-#   subregion %in% older_subregions & percent_cover == 15 ~ 2,
-#   subregion %in% older_subregions & percent_cover == 37.5 ~ 3,
-#   subregion %in% older_subregions & percent_cover == 62.5 ~ 4,
-#   subregion %in% older_subregions & percent_cover == 87.5 ~ 5,
-#   subregion == 'htr' & year %in% htr_cover_class_year & percent_cover == .1 ~ 0,
-#   subregion == 'htr' & year %in% htr_cover_class_year & percent_cover == 2.5 ~ 1,
-#   subregion == 'htr' & year %in% htr_cover_class_year & percent_cover > 5 & percent_cover < 25 ~ 2,
-#   subregion == 'htr' & year %in% htr_cover_class_year & percent_cover == 37.5 ~ 3,
-#   subregion == 'htr' & year %in% htr_cover_class_year & percent_cover == 62.5 ~ 4,
-#   subregion == 'htr' & year %in% htr_cover_class_year & percent_cover == 87.5 ~ 5,
-#   TRUE ~ abundance_class
-# )) %>% mutate(percent_cover = case_when(
-#   subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 0 ~ .1,
-#   subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 1 ~ 2.5,
-#   subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 2 ~ 15,
-#   subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 3 ~ 37.5,
-#   subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 4 ~ 62.5,
-#   subregion == 'cape_point' & year %in% old_cape_year & abundance_class == 5 ~ 87.5,
-#   TRUE ~ percent_cover
-# ))
+# ---- Cape Point: abundance_class is genuine, independently field-collected data ----
+# Both percent_cover and abundance_class were recorded per-entry on the original 
+# 1966/1996 data sheets, using a Acocks-derived individual-count category 
+# scale (1=1-4 individuals ... 5=>100 individuals; see Util_Abundance_Class2Count_CP.R 
+# / Util_Abundance_Count2Class_CP.R). This is NOT a Braun-Blanquet areal-cover class 
+# scale, and is retained as-is rather than converted to/from percent_cover in either 
+# direction:
+#   - 2010: percent_cover and abundance_class both genuinely field-measured; both kept.
+#   - 1966/1996: only abundance_class was recorded (no percent_cover); percent_cover 
+#     remains NA, since count-based abundance has no valid conversion to areal cover.
 
-# ---- Cape Point 2010: remove derived (non-original) abundance_class ----
-# Context: percent_cover was the genuine field-collected measure for cape_point
-# 2010. abundance_class values present for this year/subregion were derived via
-# conversion by a collaborator for a separate paper/analysis, then inadvertently
-# incorporated during survey aggregation. These do not represent independent
-# field assessment and are removed to avoid misrepresenting derived values as
-# original observations.
+# (no code needed here -- releve_polished already carries both columns through 
+# unmodified from the upstream join; this comment documents the decision)
 
-cape_point_2010_log <- releve_polished %>%
-  filter(subregion == 'cape_point', year == 2010, !is.na(abundance_class)) %>%
-  mutate(
-    original_abundance_class = abundance_class,
-    removal_reason = "abundance_class derived via conversion for a separate collaborator analysis; not independently field-assessed. percent_cover retained as the original measure for this survey.",
-    removal_date = Sys.Date()
-  )
-
-n_naed <- nrow(cape_point_2010_log)
-message(glue::glue("NAing {n_naed} derived abundance_class values for cape_point 2010"))
+# ---- HTR plot size metadata ----
+# 20x20m plots (mostly Tanqua Karoo, per HVDM email 2014-05-01) vs standard 
+# 10x10m. Verified: no plot-number collision with Renosterveld or Akkerendam 
+# datasets, so safe to match on bare plot number for non-_ak/_nieu HTR plots.
+# Other subregions' historical forest-plot sizing is not documented in any 
+# surviving source and is left NA.
+plots_20x20 <- c(53, 110, 111, 112, 114, 115, 116, 118, 121, 173, 244, 245, 385, 386, 387)
 
 releve_polished <- releve_polished %>%
   mutate(
-    abundance_class = if_else(
-      subregion == 'cape_point' & year == 2010,
-      NA_real_,
-      abundance_class
-    )
-  )
-
-stopifnot(sum(releve_polished$subregion == 'cape_point' & releve_polished$year == 2010 & !is.na(releve_polished$abundance_class)) == 0)
-
-write_csv(cape_point_2010_log, "cape_point_2010_abundance_class_removal_log.csv")
-
-# ---- Add cover_method column ----
-# Documents the original field-recording protocol per subregion/year, based on:
-#   1. Which of percent_cover / abundance_class was populated in the raw data
-#   2. Whether percent_cover values are continuous field estimates or 
-#      discretized midpoints of an underlying ordinal class scale
-# See reviewer-response diagnostics (site/year cross-tab, midpoint-match checks)
-# for the evidence behind each classification.
-
-older_subregions <- c('langeberg', 'cederberg', 'hangklip')
-
-releve_polished <- releve_polished %>%
-  mutate(
-    cover_method = case_when(
-      # Cape Point: abundance-class-only years
-      subregion == 'cape_point' & year %in% c(1966, 1996) ~ "abundance_class_only",
-      # Cape Point 2010: percent cover
-      subregion == 'cape_point' & year == 2010 ~ "percent_cover_continuous",
-      # Langeberg/Cederberg/Hangklip: percent_cover column holds 6-tier class midpoints
-      subregion %in% older_subregions ~ "percent_cover_class_derived",
-      # HTR 2004/2013: percent_cover holds a finer ordinal-class midpoint scale
-      subregion == 'htr' & year %in% c(2004, 2013) ~ "percent_cover_class_derived_fine",
-      # HTR 2014: recorded on true percent-cover scale (per original data notes)
-      subregion == 'htr' & year == 2014 ~ "percent_cover_continuous",
-      # Baviaanskloof: continuous field percent-cover estimates
-      subregion == 'baviaanskloof' ~ "percent_cover_continuous",
+    plot_size = case_when(
+      subregion == "htr" & !str_detect(plot, "_ak$|_nieu$") & 
+        str_extract(plot, "\\d+") %in% as.character(plots_20x20) ~ "20x20m",
+      subregion == "htr" ~ "10x10m",
       TRUE ~ NA_character_
     )
-  ) %>%
-  relocate(cover_method, .after = abundance_class)
+  )
 
-# Sanity check: confirm every row got classified and counts match your
-# earlier group_by(Site, Year) summary
-releve_polished %>%
-  count(subregion, year, cover_method) %>%
-  arrange(subregion, year)
-
-# Confirm no NAs slipped through
-stopifnot(sum(is.na(releve_polished$cover_method)) == 0)
-
-# check distribution of values over 100 for percent continuous values:
-# continuous_over100 <- plot_summary %>%
-#   filter(cover_method == "percent_cover_continuous")
-# 
-# continuous_over100 %>%
-#   summarise(
-#     n = n(),
-#     n_over100 = sum(plot_percent_cover > 100),
-#     n_100_150 = sum(plot_percent_cover > 100 & plot_percent_cover <= 150),
-#     n_150_200 = sum(plot_percent_cover > 100 & plot_percent_cover > 150 & plot_percent_cover <= 200),
-#     n_over200 = sum(plot_percent_cover > 200)
-#   )
-# 
-# ggplot(continuous_over100, aes(x = plot_percent_cover)) +
-#   geom_histogram(binwidth = 10, boundary = 100) +
-#   geom_vline(xintercept = 100, linetype = "dashed", color = "red") +
-#   geom_vline(xintercept = 200, linetype = "dotted", color = "orange") +
-#   labs(title = "plot_percent_cover distribution — percent_cover_continuous plots",
-#        x = "plot_percent_cover", y = "n plots")
-
-
-
-# Add in missing relative covers
+# ---- Single recalculation of plot totals (percent_cover column now complete) ----
 releve_polished <- releve_polished %>%
-  group_by(plot,year) %>%
-  mutate(plot_percent_cover = if_else(
-    is.na(plot_percent_cover),
-    sum(percent_cover, na.rm = TRUE),
-    plot_percent_cover
-  )) %>%
-  mutate(relative_percent_cover = if_else(
-    is.na(relative_percent_cover),
-    percent_cover/plot_percent_cover,
-    relative_percent_cover
-  )) %>%
+  group_by(plot, year) %>%
+  mutate(
+    plot_percent_cover = if (all(is.na(percent_cover))) NA_real_ else sum(percent_cover, na.rm = TRUE),
+    relative_percent_cover = percent_cover / plot_percent_cover
+  ) %>%
   ungroup()
-  
-# Join in lat/long data
-comm_loc_join <- comm_loc %>% unite(plot, Site, PLOT, sep = "_" )
 
-# Remove suffixes like "_a", "_b" from plot values
+# ---- Join lat/long, plot ID, hangklip correction ----
+comm_loc_join <- comm_loc %>% unite(plot, Site, PLOT, sep = "_")
+
 releve_polished$plot_clean <- gsub("(_[a-z])$", "", releve_polished$plot)
 
-# create a releve_ID column
-releve_polished <- releve_polished %>% unite("releve_ID", plot, year, sep = "_", remove = FALSE) 
+releve_polished <- releve_polished %>% unite("releve_ID", plot, year, sep = "_", remove = FALSE)
 
-# re-calculate the total cover column since it appear incorrect
-releve_polished <- releve_polished %>%
-  group_by(releve_ID) %>%
-  mutate(plot_percent_cover = sum(percent_cover, na.rm = TRUE)) %>%
-  ungroup() 
-
-# Then join using the cleaned column
 releve_polished <- left_join(releve_polished, comm_loc_join, by = c("plot_clean" = "plot")) %>%
   select(!plot_clean) %>%
-  rename('latitude' = 'Latitude',
-         'longitude' = 'Longitude') %>%
-  select(scientific_name_original:subregion, latitude, longitude, percent_cover:plot_percent_cover)
-
-# Insert corrected hangklip releve locations
+  rename('latitude' = 'Latitude', 'longitude' = 'Longitude') %>%
+  select(scientific_name_original:subregion, latitude, longitude, 
+         percent_cover:relative_percent_cover,
+         plot_size, releve_ID)
 corrected_hangklip <- read_sf('GCFR_Traits/Spatial_Data/hangklip_releve_new.gpkg')
-
 corrected_hangklip_coords <- corrected_hangklip %>%
   st_drop_geometry() %>%
   bind_cols(st_coordinates(corrected_hangklip) %>% as.data.frame()) %>%
@@ -824,15 +949,77 @@ releve_polished <- releve_polished %>%
   ) %>%
   select(-latitude_new, -longitude_new)
 
+releve_polished %>% filter(subregion == "hangklip") %>% distinct(plot) %>% anti_join(corrected_hangklip, by = "plot")
 
-# check for any unmatched plots
-releve_polished %>% 
-  filter(subregion == "hangklip") %>% 
-  distinct(plot) %>% 
-  anti_join(corrected_hangklip, by = "plot")
-
-# Write out polished file
 write_csv(releve_polished, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/releve.csv')
+
+
+# check over 100 distribution
+plot_summary <- releve_polished %>%
+  distinct(plot, year, subregion, cover_method, plot_percent_cover)
+
+# overall >100 rate, and whether cape_point 1966/1996 drops out entirely as expected
+plot_summary %>%
+  group_by(cover_method) %>%
+  summarise(
+    n_plots = n(),
+    n_over100 = sum(plot_percent_cover > 100, na.rm = TRUE),
+    pct_over100 = round(100 * n_over100 / n_plots, 1),
+    n_na = sum(is.na(plot_percent_cover)),
+    max_cover = max(plot_percent_cover, na.rm = TRUE)
+  ) %>%
+  arrange(desc(pct_over100))
+
+# Cape Point 2010 specifically, for the response's ~33%/100-150 claim
+plot_summary %>% filter(subregion == "cape_point", year == 2010) %>%
+  summarise(n = n(), n_over100 = sum(plot_percent_cover > 100), pct = round(100*n_over100/n, 1))
+
+# confirm the mismatch issue is resolved dataset-wide, not just HTR/Langeberg
+releve_polished %>%
+  group_by(plot, year, subregion) %>%
+  summarise(summed = sum(percent_cover, na.rm = TRUE), reported = first(plot_percent_cover), .groups = "drop") %>%
+  mutate(diff = summed - reported) %>%
+  filter(abs(diff) > 0.01) %>%
+  nrow()
+
+# overall 100 computation
+plot_summary %>%
+  summarise(
+    n_plots = n(),
+    n_with_cover = sum(!is.na(plot_percent_cover)),
+    n_over100 = sum(plot_percent_cover > 100, na.rm = TRUE),
+    pct_over100_of_all = round(100 * n_over100 / n_plots, 1),
+    pct_over100_of_assessed = round(100 * n_over100 / n_with_cover, 1)
+  )
+
+continuous_over100 <- plot_summary %>%
+  filter(cover_method == "percent_cover_continuous")
+
+continuous_over100 %>%
+  summarise(
+    n = n(),
+    n_over100 = sum(plot_percent_cover > 100),
+    n_100_150 = sum(plot_percent_cover > 100 & plot_percent_cover <= 150),
+    n_150_200 = sum(plot_percent_cover > 100 & plot_percent_cover > 150 & plot_percent_cover <= 200),
+    n_over200 = sum(plot_percent_cover > 200)
+  )
+
+ggplot(continuous_over100, aes(x = plot_percent_cover)) +
+  geom_histogram(binwidth = 10, boundary = 100) +
+  geom_vline(xintercept = 100, linetype = "dashed", color = "red") +
+  geom_vline(xintercept = 200, linetype = "dotted", color = "orange") +
+  labs(title = "plot_percent_cover distribution — percent_cover_continuous plots",
+       x = "plot_percent_cover", y = "n plots")
+
+# note that the 2011 a b plot got merged in the calculation...
+continuous_over100 %>%
+  group_by(subregion, year) %>%
+  summarise(
+    n = n(),
+    n_over100 = sum(plot_percent_cover > 100),
+    pct_over100 = round(100 * n_over100 / n, 1),
+    .groups = "drop"
+  )
 
 # Create data dictionary function ####
 

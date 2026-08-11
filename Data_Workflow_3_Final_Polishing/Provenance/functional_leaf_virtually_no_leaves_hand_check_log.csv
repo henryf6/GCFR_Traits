@@ -1,0 +1,8 @@
+scientific_name_original,family_MG,leaf_type,functional_leaf,virtually_no_leaves,recode_date,field_recoded,recode_reason
+Cassytha ciliolata,Lauraceae,leaf,leaf,1,2026-08-11,functional_leaf,functional_leaf recoded to 'culm_stem'; hand-checked against flora description / growth form
+Cassytha filiformis,Lauraceae,leaf,leaf,1,2026-08-11,functional_leaf,functional_leaf recoded to 'culm_stem'; hand-checked against flora description / growth form
+Conophytum minusculum,Aizoaceae,leaf,leaf,1,2026-08-11,virtually_no_leaves,"virtually_no_leaves 1 -> 0; genus is highly leaf-succulent (fused leaf pairs), and all other Aizoaceae in dataset coded virtually_no_leaves = 0; treated as consistent leaf-bearing morphology rather than leafless"
+Cuscuta africana,Convolvulaceae,leaf,leaf,1,2026-08-11,functional_leaf,functional_leaf recoded to 'culm_stem'; hand-checked against flora description / growth form
+Indigofera ionii,Fabaceae,leaf,leaf,1,2026-08-11,functional_leaf,functional_leaf 'leaf' -> 'mixed'; matches worked example in original 2014 documentation (leaves present only on young growth)
+Juncus kraussii,Juncaceae,leaf,leaf,1,2026-08-11,functional_leaf,functional_leaf recoded to 'culm_stem'; hand-checked against flora description / growth form
+Soroveta ambigua,Restionaceae,leaf,leaf,1,2026-08-11,functional_leaf,functional_leaf recoded to 'culm_stem'; hand-checked against flora description / growth form

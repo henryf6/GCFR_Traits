@@ -1,15 +1,19 @@
 "Column.Name","Description","Variable.class","Variable.Range.Categories","Units","Number.missing"
-"scientific_name_original",NA,"character","Abutilon sonneratianum - Zyrphelis microcephala",NA,0
-"scientific_name_WFO",NA,"character","Abutilon sonneratianum - Zyrphelis microcephala",NA,0
-"scientific_name_authorship_WFO",NA,"character","(A.DC.) E.Wimm. - Wolley-Dod",NA,5
-"family_WFO",NA,"character","Acanthaceae - Zygophyllaceae",NA,0
+"scientific_name_original",NA,"character","27987 - Zyrphelis microcephala",NA,0
+"scientific_name_WFO",NA,"character","Abutilon sonneratianum - Zyrphelis microcephala",NA,14
+"scientific_name_authorship_WFO",NA,"character","(A.DC.) A.DC. - Wolley-Dod",NA,21
+"family_WFO",NA,"character","Acanthaceae - Zygophyllaceae",NA,10
+"recovery_status",NA,"character","flagged_non_taxonomic_entry - wfo_matched",NA,0
 "releve_ID",NA,"character","BK_1_1992 - LB2_99_1993",NA,0
 "plot",NA,"character","BK_1 - LB2_99",NA,0
-"year",NA,"integer","1966 - 2014",NA,0
+"year",NA,"numeric","1966 - 2014",NA,0
 "subregion",NA,"character","baviaanskloof - langeberg",NA,0
-"latitude",NA,"numeric","-34.4 - -30.3925",NA,1566
-"longitude",NA,"numeric","18.374421 - 24.4833",NA,1566
-"percent_cover",NA,"numeric","0 - 87.5",NA,0
-"abundance_class",NA,"numeric","0 - 5",NA,10670
-"plot_percent_cover",NA,"numeric","0.1 - 1880",NA,0
-"geom",NA,"sfc_POINT","c(18.80555556, -34.3) - c(NA, NA)",NA,0
+"latitude",NA,"numeric","-34.3859716151368 - -30.3925",NA,1570
+"longitude",NA,"numeric","18.374421 - 24.4833",NA,1570
+"percent_cover",NA,"numeric","0.01 - 87.5",NA,6066
+"abundance_class",NA,"numeric","1 - 5",NA,38094
+"cover_method",NA,"character","condensed_Acocks_abundance_class_only - percent_cover_continuous_and_condensed_Acocks_abundance",NA,0
+"plot_percent_cover",NA,"numeric","0.1 - 585",NA,6066
+"relative_percent_cover",NA,"numeric","6.70151454228656e-05 - 1",NA,6066
+"scientific_name_authorship",NA,"character","(A.DC.) A.DC. - Wolley-Dod",NA,21
+"plot_size",NA,"character","10x10m - 20x20m",NA,37323
