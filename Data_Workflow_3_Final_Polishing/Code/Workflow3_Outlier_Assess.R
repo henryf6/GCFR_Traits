@@ -72,50 +72,6 @@ labtrait %>%
 
 # ---- 1. Define all flagging functions for leaf structure data --------------------------------
 
-flag_bad_lma_component <- function(df,
-                                   sample_col = "sample_id",
-                                   lma_col = "lma",
-                                   weight_col = "leaf_dry_wgt_g",
-                                   area_col = "leaf_area_cm2",
-                                   ratio_threshold = 2) {
-  
-  loo_median <- function(x) {
-    sapply(seq_along(x), function(i) median(x[-i], na.rm = TRUE))
-  }
-  
-  df %>%
-    group_by(.data[[sample_col]]) %>%
-    filter(n() >= 2, !is.na(.data[[lma_col]])) %>%
-    mutate(
-      lma_loo_med    = loo_median(.data[[lma_col]]),
-      weight_loo_med = loo_median(.data[[weight_col]]),
-      area_loo_med   = loo_median(.data[[area_col]]),
-      
-      lma_ratio   = .data[[lma_col]] / lma_loo_med,
-      weight_dev  = abs(log2(.data[[weight_col]] / weight_loo_med)),
-      area_dev    = abs(log2(.data[[area_col]]   / area_loo_med)),
-      
-      flag_bad_lma = lma_ratio > ratio_threshold | lma_ratio < (1 / ratio_threshold),
-      
-      suspected_bad = case_when(
-        !flag_bad_lma            ~ NA_character_,
-        area_dev > weight_dev    ~ "area",
-        weight_dev > area_dev    ~ "weight",
-        TRUE                     ~ "ambiguous"
-      )
-    ) %>%
-    ungroup() %>%
-    filter(flag_bad_lma) %>%
-    select(
-      NewUID, all_of(sample_col), replicate, ScientificName_WFO,
-      all_of(lma_col), lma_ratio,
-      all_of(weight_col), weight_dev,
-      all_of(area_col), area_dev,
-      suspected_bad
-    ) %>%
-    arrange(desc(lma_ratio))
-}
-
 # ---- 1. TIER 1a: Check for possible bad measures/entries using LMA for bad weights and areas ---------------
 # note that these aren't necessarily bad measures sometimes more leaves were used
 # in measurements resulting in higher weights/areas compared to other replicates. This is why this
@@ -288,8 +244,13 @@ struc_flags <- purrr::pmap_dfr(struc_bounds, function(trait, lower, upper) {
   flag_implausible_struc(labtrait, trait, lower, upper) %>%
     mutate(trait_flagged = trait, .before = 1)
 })
-# the one chemistry flag is from an unreasonable carbon value (over 100% ) that will get removed later.
 
+
+# Confirm the max percent_C value is a single implausible outlier and not
+# shared by multiple legitimate high-carbon records before NA-ing it out
+n_at_max <- sum(fieldtrait$percent_C == max(fieldtrait$percent_C, na.rm = TRUE), na.rm = TRUE)
+message(glue::glue("percent_C max-value removal will affect {n_at_max} row(s)"))
+stopifnot(n_at_max == 1) # will get removed in data polish script
 
 # ---- 4. Run flags + CV once each, on the correct frame ----------------
 possible_bad_lma_flags        <- flag_bad_lma_component(labtrait_leaf_check)
@@ -426,6 +387,10 @@ chem_flags <- purrr::pmap_dfr(chem_bounds, function(trait, lower, upper) {
 # the one chemistry flag is from an unreasonable carbon value (over 100% ) that will get removed later.
 
 # ---- 9. Canopy geometry recheck ---------------------------------------
+# Formula follows Mueller-Dombois & Ellenberg canopy cover convention
+# (mean-radius circle approximation), not a true ellipse area -- consistent
+# with how canopy_area_cm2 (renamed canopy_cover_cm2 downstream) was
+# originally computed in the field.
 fieldtrait_recalc <- fieldtrait %>%
   mutate(
     canopy_area_check = pi * ((canopy_axis_1_cm  + canopy_axis_2_cm )/ 4)^2,

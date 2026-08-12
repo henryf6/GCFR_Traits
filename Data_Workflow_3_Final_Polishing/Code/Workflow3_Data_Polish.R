@@ -156,7 +156,7 @@ canopy_chem_polished_flagged %>% count(quality_flag, sort = TRUE)
 
 # Write out polished file
 write.csv(canopy_chem_polished_flagged,
-          '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/canopy_leaf_chemistry.csv',
+          'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/canopy_leaf_chemistry.csv',
           row.names = FALSE)
 
 # Clean up foliar structure and water traits #####
@@ -376,7 +376,7 @@ leaf_struc_polished_flagged %>%
   select(sample_ID, replicate, twig_fresh_g, twig_dry_g, twig_fwc)
 
 # Write out polished file
-write.csv(leaf_struc_polished_flagged, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/leaf_struct_water_traits.csv',
+write.csv(leaf_struc_polished_flagged, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/leaf_struct_water_traits.csv',
           row.names= FALSE)
 
 
@@ -786,7 +786,7 @@ vnirspec_polished$date <- as.Date(full_dates_vnir)
 vnirspec_polished <- vnirspec_polished %>% filter(X800 > 30)
 
 # Write out polished file
-write.csv(vnirspec_polished, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/vnir_spectra.csv',
+write.csv(vnirspec_polished, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/vnir_spectra.csv',
           row.names= FALSE)
 
 # ==== Clean up releve data ====

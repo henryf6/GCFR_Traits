@@ -191,7 +191,7 @@ stopifnot(nrow(labtrait_wfo) == nrow(labtrait))
 labtrait_taxa_cleaned <- labtrait_wfo %>% rename('ScientificName_WFO' = scientificName, 'Species' = finalname, 'Family_WFO' = family) %>% 
   dplyr::select(NewUID, Species:Family_GM, ScientificName_WFO, scientificNameAuthorship, Family_WFO, latitude:twig_fwc)
 
-write.csv(labtrait_taxa_cleaned, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/lab_trait_taxa_clean.csv',row.names= FALSE)
+write.csv(labtrait_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/lab_trait_taxa_clean.csv',row.names= FALSE)
 
 # Provenance note Aug 12, 2026: Joins have been updated for a unique temporary row index
 # the original join caused a many-to-many join which duplicated rows (27,337). The rows are now 9547. 
@@ -244,7 +244,7 @@ spectrait_taxa_cleaned <- spectrait_wfo %>% rename('ScientificName_WFO' = scient
 spectrait_taxa_cleaned <-  spectrait_taxa_cleaned %>% mutate(family_GM = str_to_title(family_GM),
                                   family_POSA= str_to_title(family_POSA))
 
-write.csv(spectrait_taxa_cleaned, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/species_trait_taxa_clean.csv',row.names= FALSE)
+write.csv(spectrait_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/species_trait_taxa_clean.csv',row.names= FALSE)
 
 # WFO taxon harmonization for vnir spectroscopy data ####
 
