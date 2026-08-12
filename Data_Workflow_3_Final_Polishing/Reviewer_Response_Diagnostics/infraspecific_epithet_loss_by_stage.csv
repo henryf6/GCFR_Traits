@@ -1,0 +1,58 @@
+genus,species_epithet,stage,field,raw,infra_rank,infra_epithet,expected_infra_rank,expected_infra_epithet,has_infra,prev_has_infra,dropped_at_this_stage
+Atriplex,cinerea,raw_input,genus_species_GM,Atriplex cinerea subsp bolusii,subsp,bolusii,subsp.,bolusii,TRUE,NA,FALSE
+Atriplex,cinerea,wf2_output,genus_species_GM,Atriplex cinerea subsp. bolusii,subsp,bolusii,subsp.,bolusii,TRUE,TRUE,FALSE
+Atriplex,cinerea,wf3_output,scientific_name_MG,Atriplex cinerea subsp. bolusii,subsp,bolusii,subsp.,bolusii,TRUE,NA,FALSE
+Atriplex,cinerea,wf3_output,scientific_name_original,Atriplex cinerea,NA,NA,subsp.,bolusii,FALSE,NA,NA
+Atriplex,cinerea,raw_input,species,Atriplex cinerea,NA,NA,subsp.,bolusii,FALSE,NA,NA
+Atriplex,cinerea,wf2_output,species,Atriplex cinerea,NA,NA,subsp.,bolusii,FALSE,FALSE,FALSE
+Babiana,sambucina,raw_input,genus_species_GM,Babiana sambucina,NA,NA,var.,longibracteata,FALSE,NA,NA
+Babiana,sambucina,raw_input,genus_species_GM,Babiana sambucina var longibracteata,var,longibracteata,var.,longibracteata,TRUE,FALSE,FALSE
+Babiana,sambucina,wf2_output,genus_species_GM,Babiana sambucina,NA,NA,var.,longibracteata,FALSE,TRUE,TRUE
+Babiana,sambucina,wf2_output,genus_species_GM,Babiana sambucina var. longibracteata,var,longibracteata,var.,longibracteata,TRUE,FALSE,FALSE
+Babiana,sambucina,wf3_output,scientific_name_MG,Babiana sambucina,NA,NA,var.,longibracteata,FALSE,NA,NA
+Babiana,sambucina,wf3_output,scientific_name_MG,Babiana sambucina var. longibracteata,var,longibracteata,var.,longibracteata,TRUE,FALSE,FALSE
+Babiana,sambucina,wf3_output,scientific_name_original,Babiana sambucina,NA,NA,var.,longibracteata,FALSE,NA,NA
+Babiana,sambucina,wf3_output,scientific_name_original,Babiana sambucina,NA,NA,var.,longibracteata,FALSE,FALSE,FALSE
+Babiana,sambucina,raw_input,species,Babiana sambucina,NA,NA,var.,longibracteata,FALSE,NA,NA
+Babiana,sambucina,raw_input,species,Babiana sambucina,NA,NA,var.,longibracteata,FALSE,FALSE,FALSE
+Babiana,sambucina,wf2_output,species,Babiana sambucina,NA,NA,var.,longibracteata,FALSE,FALSE,FALSE
+Babiana,sambucina,wf2_output,species,Babiana sambucina,NA,NA,var.,longibracteata,FALSE,FALSE,FALSE
+Ehrharta,ramosa,raw_input,genus_species_GM,Ehrharta ramosa,NA,NA,subsp.,ramosa,FALSE,NA,NA
+Ehrharta,ramosa,raw_input,genus_species_GM,Ehrharta ramosa subsp ramosa,subsp,ramosa,subsp.,ramosa,TRUE,FALSE,FALSE
+Ehrharta,ramosa,wf2_output,genus_species_GM,Ehrharta ramosa,NA,NA,subsp.,ramosa,FALSE,TRUE,TRUE
+Ehrharta,ramosa,wf2_output,genus_species_GM,Ehrharta ramosa subsp. ramosa,subsp,ramosa,subsp.,ramosa,TRUE,FALSE,FALSE
+Ehrharta,ramosa,wf3_output,scientific_name_MG,Ehrharta ramosa,NA,NA,subsp.,ramosa,FALSE,NA,NA
+Ehrharta,ramosa,wf3_output,scientific_name_MG,Ehrharta ramosa subsp. ramosa,subsp,ramosa,subsp.,ramosa,TRUE,FALSE,FALSE
+Ehrharta,ramosa,wf3_output,scientific_name_original,Ehrharta ramosa,NA,NA,subsp.,ramosa,FALSE,NA,NA
+Ehrharta,ramosa,wf3_output,scientific_name_original,Ehrharta ramosa,NA,NA,subsp.,ramosa,FALSE,FALSE,FALSE
+Ehrharta,ramosa,raw_input,species,Ehrharta ramosa,NA,NA,subsp.,ramosa,FALSE,NA,NA
+Ehrharta,ramosa,raw_input,species,Ehrharta ramosa,NA,NA,subsp.,ramosa,FALSE,FALSE,FALSE
+Ehrharta,ramosa,wf2_output,species,Ehrharta ramosa,NA,NA,subsp.,ramosa,FALSE,FALSE,FALSE
+Ehrharta,ramosa,wf2_output,species,Ehrharta ramosa,NA,NA,subsp.,ramosa,FALSE,FALSE,FALSE
+Eriocephalus,ericoides,raw_input,genus_species_GM,Eriocephalus ericoides,NA,NA,subsp.,ericoides,FALSE,NA,NA
+Eriocephalus,ericoides,wf2_output,genus_species_GM,Eriocephalus ericoides,NA,NA,subsp.,ericoides,FALSE,FALSE,FALSE
+Eriocephalus,ericoides,wf3_output,scientific_name_MG,Eriocephalus ericoides,NA,NA,subsp.,ericoides,FALSE,NA,NA
+Eriocephalus,ericoides,wf3_output,scientific_name_original,Eriocephalus ericoides,NA,NA,subsp.,ericoides,FALSE,NA,NA
+Eriocephalus,ericoides,raw_input,species,Eriocephalus ericoides,NA,NA,subsp.,ericoides,FALSE,NA,NA
+Eriocephalus,ericoides,wf2_output,species,Eriocephalus ericoides,NA,NA,subsp.,ericoides,FALSE,FALSE,FALSE
+Eriocephalus,microphyllus,raw_input,genus_species_GM,Eriocephalus microphyllus,NA,NA,var.,microphyllus,FALSE,NA,NA
+Eriocephalus,microphyllus,wf2_output,genus_species_GM,Eriocephalus microphyllus,NA,NA,var.,microphyllus,FALSE,FALSE,FALSE
+Eriocephalus,microphyllus,wf3_output,scientific_name_MG,Eriocephalus microphyllus,NA,NA,var.,microphyllus,FALSE,NA,NA
+Eriocephalus,microphyllus,wf3_output,scientific_name_original,Eriocephalus microphyllus,NA,NA,var.,microphyllus,FALSE,NA,NA
+Eriocephalus,microphyllus,raw_input,species,Eriocephalus microphyllus,NA,NA,var.,microphyllus,FALSE,NA,NA
+Eriocephalus,microphyllus,wf2_output,species,Eriocephalus microphyllus,NA,NA,var.,microphyllus,FALSE,FALSE,FALSE
+Osteospermum,incanum,raw_input,genus_species_GM,Osteospermum incanum,NA,NA,subsp.,incanum,FALSE,NA,NA
+Osteospermum,incanum,wf2_output,genus_species_GM,Osteospermum incanum,NA,NA,subsp.,incanum,FALSE,FALSE,FALSE
+Osteospermum,incanum,wf3_output,scientific_name_MG,Osteospermum incanum,NA,NA,subsp.,incanum,FALSE,NA,NA
+Osteospermum,incanum,wf3_output,scientific_name_original,Osteospermum incanum subsp. incanum,subsp,incanum,subsp.,incanum,TRUE,NA,FALSE
+Osteospermum,incanum,raw_input,species,Osteospermum incanum subsp incanum,subsp,incanum,subsp.,incanum,TRUE,NA,FALSE
+Osteospermum,incanum,wf2_output,species,Osteospermum incanum subsp. incanum,subsp,incanum,subsp.,incanum,TRUE,TRUE,FALSE
+Oxalis,massoniana,raw_input,genus_species_GM,Oxalis massoniana var massoniana,var,massoniana,var.,massoniana,TRUE,NA,FALSE
+Oxalis,massoniana,wf2_output,genus_species_GM,Oxalis massoniana var. massoniana,var,massoniana,var.,massoniana,TRUE,TRUE,FALSE
+Oxalis,massoniana,wf3_output,scientific_name_MG,Oxalis massoniana var. massoniana,var,massoniana,var.,massoniana,TRUE,NA,FALSE
+Ursinia,nana,raw_input,genus_species_GM,Ursinia nana subsp nana,subsp,nana,subsp.,nana,TRUE,NA,FALSE
+Ursinia,nana,wf2_output,genus_species_GM,Ursinia nana subsp. nana,subsp,nana,subsp.,nana,TRUE,TRUE,FALSE
+Ursinia,nana,wf3_output,scientific_name_MG,Ursinia nana subsp. nana,subsp,nana,subsp.,nana,TRUE,NA,FALSE
+Ursinia,nana,wf3_output,scientific_name_original,Ursinia nana subsp. nana,subsp,nana,subsp.,nana,TRUE,NA,FALSE
+Ursinia,nana,raw_input,species,Ursinia nana subsp nana,subsp,nana,subsp.,nana,TRUE,NA,FALSE
+Ursinia,nana,wf2_output,species,Ursinia nana subsp. nana,subsp,nana,subsp.,nana,TRUE,TRUE,FALSE
