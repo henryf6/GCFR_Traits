@@ -29,8 +29,9 @@ figpath <- 'GCFR_Traits/Data_Workflow_4_Figure_Creation/Figures/'
 # Figures for chem_canopy data ####
 
 # re-level the subregion categories for nice display
-chem_canop$subregion <- factor(x = chem_canop$subregion, levels = sort(unique(chem_canop$subregion)))
-subregion_labels = c("Baviaanskloof", "Hantam-Tanqua-\nRoggeveld", "Hangklip", "Langeberg", "Cederberg", "Cape Point")
+chem_canop$subregion <- factor(x = chem_canop$subregion, levels = sort(unique(chem_canop$subregion)),
+                               labels = c("Baviaanskloof","Cape Point","Cederberg", "Hangklip", "Hantam-Tanqua-\nRoggeveld", "Langeberg"))
+
 
 
 chem_canop <- chem_canop %>% rename('Subregion' = 'subregion') 
@@ -68,8 +69,8 @@ C_iso <- ggplot(chem_canop, aes(x = d_13C_12C, color = Subregion)) + geom_densit
 
 C_iso
 
-# check whether removeing likely CAM species changes aridity.
-no_sure_cam <- chem_canop %>%filter(!family_WFO == 'Aizoaceae' | family_WFO == 'Crassulaceae')
+# check whether removing likely CAM species changes aridity.
+no_sure_cam <- chem_canop %>% filter(!(family_WFO %in% c('Aizoaceae', 'Crassulaceae')))
 ggplot(no_sure_cam, aes(x = d_13C_12C, color = Subregion)) + geom_density(linewidth =1) +
   theme_classic() +
   scale_color_brewer(palette = "Dark2") +
@@ -91,7 +92,7 @@ sort(prop.table(table(cede_canopy$family_WFO)))
 combined_foliar_chem <-ggarrange(N_plot, C_plot, N_iso, C_iso, labels = c('A','B','C','D'), ncol = 2, nrow = 2,
           common.legend = TRUE,
           legend = "right"
-) + theme(text = element_text(size = 12, family = "Arial"))
+) + theme(text = element_text(size = 12, family = "sans"))
 combined_foliar_chem
 
 # Save as tiff and jpeg
@@ -146,7 +147,7 @@ combined_foliar_struct <-ggarrange(lma, lwc, thick, lwr, ncol = 2, nrow = 2,
                                    labels = c('A','B','C', 'D'),
                                  common.legend = TRUE,
                                  legend = "right"
-) + theme(text = element_text(size = 12, family = "Arial"))
+) + theme(text = element_text(size = 12, family = "sans"))
 combined_foliar_struct
 
 # Save as tiff and jpeg
@@ -179,7 +180,7 @@ growth_types <- spectrait[, c("herb", 'geophyte', 'graminoid','low_shrub', 'mid_
                              )]
 
 # Sum each column to get the count of species per category
-type_counts <- colSums(growth_types)
+type_counts <- colSums(growth_types, na.rm = TRUE)
 
 # Convert the result to a data frame for ggplot
 type_df <- data.frame(
@@ -377,8 +378,8 @@ spectrait_clean <- spectrait %>%
   )
 
 # Step 2: Plot with proportion labels
-spectrait_clean2 <- spectrait_clean %>% filter(flammability != 'i') # remove an odd value
-flam_disp <- ggplot(spectrait_clean2, aes(x = flammability, y = n, fill = dispersal)) +
+
+flam_disp <- ggplot(spectrait_clean, aes(x = flammability, y = n, fill = dispersal)) +
   geom_col(position = position_dodge(width = 0.9)) +
   geom_text(
     aes(label = scales::percent(proportion, accuracy = 1)),
@@ -402,7 +403,7 @@ library(patchwork)
 
 combined_test <- (growth_form_plot + leaf_form_plot) / (flam_disp + flower_phen_prop) +
   #plot_layout(guides = 'collect') &
-  theme(text = element_text(size = 12, family = "Arial"))
+  theme(text = element_text(size = 12, family = "sans"))
 
 combined_test <- combined_test + plot_annotation(tag_levels = 'A')
 combined_test
@@ -633,7 +634,10 @@ richness_gis <- richness %>%
   left_join(releve %>% select(plot, latitude, longitude) %>% distinct(), by = "plot") 
 
 # remove missing lat/longs (1966 Cape Point)
-releve_sf <- st_as_sf(richness_gis %>% na.omit(latitude) , coords = c("longitude", "latitude"), crs = 4326)
+releve_sf <- st_as_sf(
+  richness_gis %>% filter(!is.na(latitude), !is.na(longitude)),
+  coords = c("longitude", "latitude"), crs = 4326
+)
 
 # choose only most recent surveys for the repeated surveys
 non_temp_rep_subs <- c('htr', 'hangklip','langeberg', 'cederberg')
@@ -648,7 +652,11 @@ write_sf(releve_sf_output, 'GCFR_Traits/Spatial_Data/sp_rich_releve.geojson', de
 # Describe the number of structural leaf and twig traits measured ####
 colnames(leafstruc)
 
-leaf_strucflat <- purrr::flatten_dbl(leafstruc[,15:29])
+# leaf/twig structural trait count (was leafstruc[,15:29])
+leaf_strucflat <- purrr::flatten_dbl(leafstruc %>%
+                                         select(leaf_area_cm2, leaf_length_cm, avg_leaf_width_cm, max_leaf_width_cm,
+                                                leaf_thickness_mm, leaf_fresh_wgt_g, leaf_dry_wgt_g, twig_fresh_g,
+                                                twig_dry_g, lma, lwc, succulence, ldmc, lwr, twig_fwc))
 missingleaf_struc <- which(is.na(leaf_strucflat) == TRUE)
 
 leaf_structraitobs <- leaf_strucflat[-missingleaf_struc]
@@ -691,29 +699,19 @@ View(summary_struc)
 
 #### Describe the number of canopy structural traits measured ####
 colnames(chem_canop)
-
-canopyflat <- purrr::flatten_dbl(chem_canop[,c(14,17,18)])
+# canopy structural trait count (was chem_canop[,c(14,17,18)])
+canopyflat <- purrr::flatten_dbl(chem_canop %>%
+                                   select(height_cm, canopy_cover_cm2, branch_order))
 missingcanopyflat <- which(is.na(canopyflat) == TRUE)
 
 canopyflattraitobs <- canopyflat[-missingcanopyflat]
 
 print(length(canopyflattraitobs))
 
-# number of average replicates and s.d./rangef
-leafstruc_count <- leafstruc %>% group_by(scientific_name_WFO, subregion) %>%
-  summarise(SampleCounts = n()) %>% ungroup()
-
-# check variation by region
-leafstruc_count %>% group_by(subregion)   %>% summarise(mean = mean(SampleCounts))
-
-# overall summaries
-median(leafstruc_count$SampleCounts)
-mean(leafstruc_count$SampleCounts)
-sd(leafstruc_count$SampleCounts)
-range(leafstruc_count$SampleCounts)
-
 #### Describe the number of elemental/isotope traits measured ####
-leafstrucelemflat <- purrr::flatten_dbl(chem_canop[,20:24])
+# elemental/isotope trait count (was chem_canop[,20:24])
+leafstrucelemflat <- purrr::flatten_dbl(chem_canop %>%
+                                          select(percent_N, percent_C, C_to_N_ratio, d_15N_14N, d_13C_12C))
 missingelemflat <- which(is.na(leafstrucelemflat) == TRUE)
 
 leafstrucelemtraitobs <- leafstrucelemflat[-missingelemflat]

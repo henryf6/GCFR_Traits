@@ -12,8 +12,7 @@
 "longitude",NA,"numeric","18.374421 - 24.4833",NA,1570
 "percent_cover",NA,"numeric","0.01 - 87.5",NA,6066
 "abundance_class",NA,"numeric","1 - 5",NA,38094
-"cover_method",NA,"character","condensed_Acocks_abundance_class_only - percent_cover_continuous_and_condensed_Acocks_abundance",NA,0
+"cover_method",NA,"character","condensed_Acocks_abundance_class_only - percent_cover_continuous",NA,0
 "plot_percent_cover",NA,"numeric","0.1 - 585",NA,6066
 "relative_percent_cover",NA,"numeric","6.70151454228656e-05 - 1",NA,6066
-"scientific_name_authorship",NA,"character","(A.DC.) A.DC. - Wolley-Dod",NA,21
 "plot_size",NA,"character","10x10m - 20x20m",NA,37323

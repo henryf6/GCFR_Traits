@@ -1,5 +1,5 @@
 scientific_name_original,scientific_name_MG,succulent,leaf_succulent,stem_succulent,recode_date,recode_reason
-Boophone disticha,Boophone disticha,0,0,1,2026-08-11,leaf_succulent or stem_succulent = 1 implies succulent should also = 1; recoded 0 -> 1
-Heliophila dregeana,Heliophila dregeana,0,1,0,2026-08-11,leaf_succulent or stem_succulent = 1 implies succulent should also = 1; recoded 0 -> 1
-Didelta spinosa,Didelta spinosa,0,1,0,2026-08-11,leaf_succulent or stem_succulent = 1 implies succulent should also = 1; recoded 0 -> 1
-Oxalis pocockiae,Oxalis pocockiae,0,1,0,2026-08-11,leaf_succulent or stem_succulent = 1 implies succulent should also = 1; recoded 0 -> 1
+Boophone disticha,Boophone disticha,0,0,1,2026-08-12,leaf_succulent or stem_succulent = 1 implies succulent should also = 1; recoded 0 -> 1
+Heliophila dregeana,Heliophila dregeana,0,1,0,2026-08-12,leaf_succulent or stem_succulent = 1 implies succulent should also = 1; recoded 0 -> 1
+Didelta spinosa,Didelta spinosa,0,1,0,2026-08-12,leaf_succulent or stem_succulent = 1 implies succulent should also = 1; recoded 0 -> 1
+Oxalis pocockiae,Oxalis pocockiae,0,1,0,2026-08-12,leaf_succulent or stem_succulent = 1 implies succulent should also = 1; recoded 0 -> 1

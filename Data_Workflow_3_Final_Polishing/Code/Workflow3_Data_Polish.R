@@ -356,6 +356,12 @@ leaf_struc_polished_flagged %>% count(quality_flag, sort = TRUE)
 # mismatches), this safely propagates every raw-column removal into its
 # dependent derived traits without hand-tracking which trait needs which column.
 # recompute all derived traits from the now-NA'd raw columns ----
+# lma and succulence are computed here in g/m^2 (publication unit) rather
+# than the internal g/cm^2 scale used upstream (leaf_struc_intermediate.csv
+# has lma in range ~0.0013-0.465 g/cm^2) -- the *10000 converts cm^2 -> m^2.
+# This matches struc_bounds in Workflow3_Outlier_Assess.R, where the lma
+# plausibility bounds (14-1500 g/m^2, Wright et al. 2004) are divided by
+# 10000 to compare against the internal g/cm^2 scale.
 leaf_struc_polished_flagged <- leaf_struc_polished_flagged %>%
   mutate(
     lma        = leaf_dry_wgt_g / leaf_area_cm2 * 10000,
@@ -741,7 +747,7 @@ vnirspec_polished <- vnirspec %>% rename('scientific_name_original' = 'finalname
                                 relocate(sample_ID, .before = 1)
 
 # Remove [] from authority column
-vnirspec_polished$scientific_name_authorship <- gsub("\\[|\\]", "", vnirspec_polished$scientific_name_authorship_WFO)
+vnirspec_polished$scientific_name_authorship_WFO <- gsub("\\[|\\]", "", vnirspec_polished$scientific_name_authorship_WFO)
 
 # No need to include the split the genus and species info or subregion abbreviation,
 #   redundant information used for the EcoSis submission
