@@ -2,6 +2,9 @@
 *.tif filter=lfs diff=lfs merge=lfs -text
 *.png filter=lfs diff=lfs merge=lfs -text
 *.pdf filter=lfs diff=lfs merge=lfs -text
+Data_Workflow_3_Final_Polishing/Data_Outputs/VNIR_Spectra.csv filter=lfs diff=lfs merge=lfs -text
+Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/vnir_taxa_clean.csv filter=lfs diff=lfs merge=lfs -text
+Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/GCFRSpectralLibraryEcoSisV3.csv filter=lfs diff=lfs merge=lfs -text
 VNIR_Spectra.csv filter=lfs diff=lfs merge=lfs -text
 vnir_taxa_clean.csv filter=lfs diff=lfs merge=lfs -text
 GCFRSpectralLibraryEcoSisV3.csv filter=lfs diff=lfs merge=lfs -text
