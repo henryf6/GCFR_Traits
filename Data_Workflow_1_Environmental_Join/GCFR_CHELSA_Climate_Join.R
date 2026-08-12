@@ -45,15 +45,15 @@ for (i in 1:length(tiff_files)) {
   values <- raster::extract(raster_data, point_data)
   
   # Check if any points fall outside the extent of the GeoTIFF
-  valid_points <- !is.na(values)
+  #valid_points <- !is.na(values)
   
   # Determine the number of rows for the extracted values
-  num_rows <- ifelse(i == 1, sum(valid_points), nrow(extracted_data))
+  #num_rows <- ifelse(i == 1, sum(valid_points), nrow(extracted_data))
   
   # Pad the extracted values with NAs to match the number of rows
-  if (sum(valid_points) < num_rows) {
-    values <- c(values, rep(NA, num_rows - sum(valid_points)))
-  }
+  #if (sum(valid_points) < num_rows) {
+  #  values <- c(values, rep(NA, num_rows - sum(valid_points)))
+  #}
   
   # Add the extracted values to the data frame
   extracted_data <- cbind(extracted_data, values)
@@ -72,14 +72,20 @@ merged_data <- cbind(point_file, extracted_data)
 which(is.na(merged_data$bio1) == TRUE)
 which(is.na(merged_data$bio12) == TRUE)
 
-# Convert MAT and MAP to original units
+# Assess missingness for MAT and MAP
+which(is.na(merged_data$bio1) == TRUE)
+which(is.na(merged_data$bio12) == TRUE)
 
-# MAT has a scale factor of 0.1 and offset of -273.15 (see CHELSA documentation)
-merged_data$MAT <- (merged_data$bio1 *.1) - 273.15
- 
-# MAP has a scale factor 0.1 and is measured in kg m^-2 per year and convert it to
-# mm per year (see CHELSA documentation)
-merged_data$MAP <- (merged_data$bio12 *.1) 
+# bio1 and bio12 come back from extract() already converted to real-world
+# units (°C and mm/year respectively) -- the raster package applies the
+# CHELSA GeoTIFFs' embedded scale/offset tags automatically on extraction.
+# Confirmed via range checks: bio1 in [11.55, 19.95] (plausible CFR MAT in
+# °C, not Kelvin*10), bio12 in [202.6, 1395.8] (plausible CFR MAP in mm/yr).
+# Previously this block re-applied the manual Kelvin*10 conversion on top
+# of already-converted values, producing MAT ~ -271 to -272 and MAP at
+# 1/10th its true value.
+merged_data$MAT <- merged_data$bio1
+merged_data$MAP <- merged_data$bio12
 
 # Write out full data
 data_output_path = 'GCFR_Traits/Data_Workflow_1_Environmental_Join/Climate_Summary_Data_Outputs'
@@ -95,7 +101,7 @@ region_summary <- merged_data %>% group_by(region) %>%
             avgMAP = mean(MAP),
             sdMAP = sd(MAP),
             minMAP = min(MAP),
-            maxMATP = max(MAP))
+            maxMAP = max(MAP))
 
 head(region_summary)
 region_summary_csv <- data.frame(region_summary)

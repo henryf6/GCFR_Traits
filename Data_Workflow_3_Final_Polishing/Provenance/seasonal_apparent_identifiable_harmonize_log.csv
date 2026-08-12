@@ -1,0 +1,5 @@
+scientific_name_original,scientific_name_MG,seasonally_apparent,seasonally_identifiable,recode_date,recode_reason
+Agapanthus praecox,Agapanthus praecox,1,0,2026-08-11,seasonally_apparent = 1 implies seasonally_identifiable should also = 1 (species with a dormant season are necessarily unidentifiable during that period); recoded 0 -> 1
+Agapanthus walshii,Agapanthus africanus,1,0,2026-08-11,seasonally_apparent = 1 implies seasonally_identifiable should also = 1 (species with a dormant season are necessarily unidentifiable during that period); recoded 0 -> 1
+Villarsia capensis,Villarsia capensis,1,0,2026-08-11,seasonally_apparent = 1 implies seasonally_identifiable should also = 1 (species with a dormant season are necessarily unidentifiable during that period); recoded 0 -> 1
+Crossyne guttata,Crossyne guttata,1,0,2026-08-11,seasonally_apparent = 1 implies seasonally_identifiable should also = 1 (species with a dormant season are necessarily unidentifiable during that period); recoded 0 -> 1

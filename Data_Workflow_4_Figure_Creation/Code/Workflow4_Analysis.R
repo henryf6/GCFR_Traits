@@ -311,7 +311,7 @@ leaf_types_clean <- spectrait %>%
     lvs_lobed     = replace_na(lvs_lobed,     0),
     lvs_dissected = replace_na(lvs_dissected, 0)
   ) %>%
-  select(lvs_linear, lvs_intermediate, lvs_oval,
+  select(lvs_linear, lvs_shape_other, lvs_oval,
          lvs_compound, lvs_lobed, lvs_dissected,
          virtually_no_leaves)
 
@@ -325,7 +325,7 @@ type_df_lvs <- data.frame(
 
 type_df_lvs$category <- recode(type_df_lvs$category,
                            "lvs_linear" = "linear",
-                           "lvs_intermediate" = "intermediate",
+                           "lvs_shape_other" = "other",
                            "lvs_oval" = "oval",
                            "lvs_compound" = "compound",
                            'virtually_no_leaves' = 'no leaves',

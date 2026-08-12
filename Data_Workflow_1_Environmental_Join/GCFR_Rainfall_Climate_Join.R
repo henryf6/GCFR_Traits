@@ -47,15 +47,15 @@ for (i in 1:length(tiff_files)) {
   values <- extract(raster_data, point_data_sf)
   
   # Check if any points fall outside the extent of the GeoTIFF
-  valid_points <- !is.na(values)
+  #valid_points <- !is.na(values)
   
   # Determine the number of rows for the extracted values
-  num_rows <- ifelse(i == 1, sum(valid_points), nrow(extracted_data))
+  #num_rows <- ifelse(i == 1, sum(valid_points), nrow(extracted_data))
   
   # Pad the extracted values with NAs to match the number of rows
-  if (sum(valid_points) < num_rows) {
-    values <- c(values, rep(NA, num_rows - sum(valid_points)))
-  }
+  #if (sum(valid_points) < num_rows) {
+  #  values <- c(values, rep(NA, num_rows - sum(valid_points)))
+  #}
   
   # Add the extracted values to the data frame
   extracted_data <- cbind(extracted_data, values)
@@ -99,7 +99,7 @@ merged_data <- cbind(point_data, extracted_data)
 
 data_output_path = 'GCFR_Traits/Data_Workflow_1_Environmental_Join/Climate_Summary_Data_Outputs'
 
-write.csv(point_data, paste0(data_output_path,'/Rainfall_field_traits.csv'))
+write.csv(merged_data, paste0(data_output_path,'/Rainfall_field_traits.csv'))
 
 # Write out regional summary
 regional_summary <- merged_data %>% group_by(region) %>%

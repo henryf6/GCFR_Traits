@@ -382,32 +382,34 @@ write.csv(leaf_struc_polished_flagged, '/Users/henryfrye/Dropbox/Intellectual_En
 
 # Clean up columns for species traits table #####
 
-spectrait_polished <- spectrait %>% rename('scientific_name_original' = 'species', # original designation
-                                           'scientific_name_MG' = 'genus_species_GM',
-                                             'family_MG' = 'family_GM', # match the order of the flora citation
-                                             'scientific_name_WFO' = 'ScientificName_WFO', # match other column name format
-                                             'scientific_name_authorship_WFO' = 'scientificNameAuthorship',
-                                             'family_WFO' = 'Family_WFO') %>%
-                                            select(!lifecycle_POSA)
+spectrait_polished <- spectrait %>%
+  rename('scientific_name_original' = 'species', # original designation
+         'scientific_name_MG' = 'genus_species_GM',
+         'family_MG' = 'family_GM', # match the order of the flora citation
+         'scientific_name_WFO' = 'ScientificName_WFO', # match other column name format
+         'scientific_name_authorship_WFO' = 'scientificNameAuthorship',
+         'family_WFO' = 'Family_WFO') %>%
+  select(!lifecycle_POSA)
 
-# Convert family MG to sentence case
+# Convert family MG to title case
 spectrait_polished$family_MG <- str_to_title(spectrait_polished$family_MG)
 
 # Remove extra column (family designation based on Plants of South Africa)
-spectrait_polished <- spectrait_polished %>% dplyr::select(!family_POSA)
+spectrait_polished <- spectrait_polished %>% select(!family_POSA)
 
 # Correct authority for Brunsvigia nervosa
-spectrait_polished <- spectrait_polished %>% mutate(scientific_name_authorship_WFO = case_when(
-  scientific_name_WFO == 'Brunsvigia nervosa' ~ '(Poir.) Masw.',
-  TRUE ~ scientific_name_authorship_WFO
-))
+spectrait_polished <- spectrait_polished %>%
+  mutate(scientific_name_authorship_WFO = case_when(
+    scientific_name_WFO == 'Brunsvigia nervosa' ~ '(Poir.) Masw.',
+    TRUE ~ scientific_name_authorship_WFO
+  ))
 
 # Remove [] from authority column
-spectrait_polished$scientific_name_authorship_WFO <- gsub("\\[|\\]", "", spectrait_polished$scientific_name_authorship_WFO)
+spectrait_polished$scientific_name_authorship_WFO <-
+  gsub("\\[|\\]", "", spectrait_polished$scientific_name_authorship_WFO)
 
 # Investigate blank scientific_name_original rows
-spectrait_polished[which(spectrait_polished$scientific_name_original == ''),]
-
+spectrait_polished[which(spectrait_polished$scientific_name_original == ''), ]
 
 # Provenance: Albuca cf. namaquensis removal
 albuca_removal_log <- spectrait_polished %>%
@@ -416,21 +418,18 @@ albuca_removal_log <- spectrait_polished %>%
          removal_reason = "does not appear in other datasets; treated as a spurious/unmatched entry")
 write_csv(albuca_removal_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/albuca_namaquensis_removal_log.csv")
 
-# Remove the Albuca cf. namaquensis entry
 spectrait_polished <- spectrait_polished %>%
-  dplyr::filter(scientific_name_MG != 'Albuca cf. namaquensis')
-
-spectrait_polished <- spectrait_polished %>% dplyr::filter(scientific_name_MG != 'Albuca cf. namaquensis')
+  filter(scientific_name_MG != 'Albuca cf. namaquensis')
 
 # Convert blank entries for lifecycle_POSA to NA; column removed, now deprecated.
 # unique(spectrait_polished$lifecycle_POSA)
-# spectrait_polished <- spectrait_polished %>% mutate(lifecycle_POSA =  na_if(lifecycle_POSA, "")) # Convert "" to NA
+# spectrait_polished <- spectrait_polished %>% mutate(lifecycle_POSA = na_if(lifecycle_POSA, ""))
 
 # Check cases where both annual and perennial selected
 ann_per_subset_df <- spectrait_polished %>% filter(perennial == 1, annual == 1)
 # these are listed as likely polymorphic in the flora references
 
-# Workflow: NA-recode records with 0/0 evergreen-deciduous (reviewer comment: 
+# Workflow: NA-recode records with 0/0 evergreen-deciduous (reviewer comment:
 # "not evergreen and not deciduous" for 101 names should be NA, not 0/0)
 
 evergreen_deciduous_na_log <- spectrait_polished %>%
@@ -440,8 +439,7 @@ evergreen_deciduous_na_log <- spectrait_polished %>%
   mutate(recode_date = Sys.Date(),
          recode_reason = "both evergreen and deciduous = 0; treated as missing data per reviewer comment")
 
-# sanity check against the 101 names the reviewer cites
-nrow(evergreen_deciduous_na_log)
+nrow(evergreen_deciduous_na_log)  # sanity check against the 101 names the reviewer cites
 
 write_csv(evergreen_deciduous_na_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/evergreen_deciduous_na_recode_log.csv")
 
@@ -482,7 +480,6 @@ nrow(evergreen_deciduous_conflict_log)  # should be 21
 
 write_csv(evergreen_deciduous_conflict_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/evergreen_deciduous_conflict_recode_log.csv")
 
-# implement change
 spectrait_polished <- spectrait_polished %>%
   mutate(
     deciduous = if_else(evergreen == 1 & deciduous == 1, 0, deciduous)
@@ -516,8 +513,7 @@ spectrait_polished <- spectrait_polished %>%
 spectrait_polished <- spectrait_polished %>%
   rename(lvs_shape_other = lvs_intermediate)
 
-# confirm clean binary now
-table(spectrait_polished$lvs_shape_other)
+table(spectrait_polished$lvs_shape_other)  # confirm clean binary now
 
 # Provenance: seasonally_apparent / seasonally_identifiable harmonization
 seasonal_harmonize_log <- spectrait_polished %>%
@@ -526,12 +522,6 @@ seasonal_harmonize_log <- spectrait_polished %>%
   mutate(recode_date = Sys.Date(),
          recode_reason = "seasonally_apparent = 1 implies seasonally_identifiable should also = 1 (species with a dormant season are necessarily unidentifiable during that period); recoded 0 -> 1")
 write_csv(seasonal_harmonize_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/seasonal_apparent_identifiable_harmonize_log.csv")
-
-spectrait_polished <- spectrait_polished %>%
-  mutate(seasonally_identifiable = if_else(seasonally_apparent == 1 & seasonally_identifiable == 0, 1, seasonally_identifiable))
-
-# Clean seasonally apparent/identifiable (if you are apparent you should be indentifiable)
-spectrait_polished %>% filter(seasonally_apparent == 1, seasonally_identifiable== 0)
 
 spectrait_polished <- spectrait_polished %>%
   mutate(seasonally_identifiable = if_else(seasonally_apparent == 1 & seasonally_identifiable == 0, 1, seasonally_identifiable))
@@ -548,14 +538,19 @@ spectrait_polished <- spectrait_polished %>%
   mutate(succulent = if_else(stem_succulent == 1 & succulent == 0, 1, succulent),
          succulent = if_else(leaf_succulent == 1 & succulent == 0, 1, succulent))
 
-# Clean succulent status
-spectrait_polished <- spectrait_polished %>%
-  mutate(succulent = if_else(stem_succulent == 1 & succulent == 0, 1, succulent),
-         succulent = if_else(leaf_succulent == 1 & succulent == 0, 1, succulent),)
+# Clean flower begin variable - inspection
+unique(spectrait_polished$flower_begin)
+table(spectrait_polished$flower_begin)
+spectrait_polished[which(spectrait_polished$flower_begin == 'A'), ] # A stands for all-year
+spectrait_polished[which(spectrait_polished$flower_begin == 'E'), ] # Almost all-year
+spectrait_polished[which(spectrait_polished$flower_begin == 'H'), ] # Unknown meaning
+spectrait_polished[which(spectrait_polished$flower_begin == 'I'), ] # unsure on meaning, MG has this as Nov.-May.
+spectrait_polished[which(spectrait_polished$flower_begin == 'R'), ] # entry for this is Oct.-Nov, best to change
+spectrait_polished[which(spectrait_polished$flower_begin == '?'), ] # unknown
 
 # Provenance: flower_begin recoding
 flower_begin_recode_log <- spectrait_polished %>%
-  filter(flower_begin %in% c('A','E','H','I','R','?','')) %>%
+  filter(flower_begin %in% c('A', 'E', 'H', 'I', 'R', '?', '')) %>%
   select(scientific_name_original, scientific_name_MG, flower_begin) %>%
   mutate(recode_date = Sys.Date(),
          recode_reason = case_when(
@@ -563,74 +558,56 @@ flower_begin_recode_log <- spectrait_polished %>%
            flower_begin == 'E' ~ "'E' recoded to 'Almost all year'",
            flower_begin == 'I' ~ "'I' recoded to 'Nov' per G&M flora entry (Nov.-May range)",
            flower_begin == 'R' ~ "'R' recoded to 'Oct'; flora entry gives Oct.-Nov. range, used the more expansive (earlier) bound",
-           flower_begin %in% c('H','?','') ~ "code meaning could not be determined; recoded to NA",
+           flower_begin %in% c('H', '?', '') ~ "code meaning could not be determined; recoded to NA",
            TRUE ~ NA_character_))
 write_csv(flower_begin_recode_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/flower_begin_recode_log.csv")
 
-spectrait_polished <- spectrait_polished %>% mutate(
-  flower_begin = na_if(flower_begin,'H'),
-  flower_begin = na_if(flower_begin,'?'),
-  flower_begin = na_if(flower_begin,''),
-  flower_begin = case_when( flower_begin == 'A' ~ 'All year',
-                            flower_begin == 'E' ~ 'Almost all year',
-                            flower_begin == 'I' ~ 'Nov',
-                            flower_begin == 'R' ~ 'Oct',
-                            TRUE ~ flower_begin))
+spectrait_polished <- spectrait_polished %>%
+  mutate(
+    flower_begin = na_if(flower_begin, 'H'),
+    flower_begin = na_if(flower_begin, '?'),
+    flower_begin = na_if(flower_begin, ''),
+    flower_begin = case_when(
+      flower_begin == 'A' ~ 'All year',
+      flower_begin == 'E' ~ 'Almost all year',
+      flower_begin == 'I' ~ 'Nov',
+      flower_begin == 'R' ~ 'Oct',
+      TRUE ~ flower_begin))
 
-# Clean flower begin variable
-unique(spectrait_polished$flower_begin)
-table(spectrait_polished$flower_begin)
-spectrait_polished[which(spectrait_polished$flower_begin == 'A'),] # A stands for all-year
-spectrait_polished[which(spectrait_polished$flower_begin == 'E'),] # Almost all-year
-spectrait_polished[which(spectrait_polished$flower_begin == 'H'),] # Unknown meaning
-spectrait_polished[which(spectrait_polished$flower_begin == 'I'),] # unsure on meaning, MG has this as Nov.–May.
-spectrait_polished[which(spectrait_polished$flower_begin == 'R'),] # entry for this is Oct.–Nov, best to change
-spectrait_polished[which(spectrait_polished$flower_begin == '?'),] # unknown
-
-spectrait_polished <- spectrait_polished %>% mutate(
-                      flower_begin =na_if(flower_begin,'H'),
-                      flower_begin = na_if(flower_begin,'?'),
-                      flower_begin = na_if(flower_begin,''),
-                      flower_begin = case_when( flower_begin == 'A' ~ 'All year',
-                                           flower_begin == 'E' ~ 'Almost all year',
-                                           flower_begin == 'I' ~ 'Nov',
-                                           flower_begin == 'R' ~ 'Oct',
-                                           TRUE ~ flower_begin))
 table(spectrait_polished$flower_begin)
 
 # Clean flower end column
 unique(spectrait_polished$flower_end)
-spectrait_polished[which(spectrait_polished$flower_end == '?'),]
+spectrait_polished[which(spectrait_polished$flower_end == '?'), ]
 
-spectrait_polished <- spectrait_polished %>% mutate(
-  flower_end = na_if(flower_end,'?'),
-  flower_end = na_if(flower_end,''))
+spectrait_polished <- spectrait_polished %>%
+  mutate(flower_end = na_if(flower_end, '?'),
+         flower_end = na_if(flower_end, ''))
 unique(spectrait_polished$flower_end)
 
 # Clean up alt flower begin column
 unique(spectrait_polished$flower_begin_alt)
-spectrait_polished <- spectrait_polished %>% mutate(
-  flower_begin_alt = na_if(flower_begin_alt,''))
-  
+spectrait_polished <- spectrait_polished %>%
+  mutate(flower_begin_alt = na_if(flower_begin_alt, ''))
 unique(spectrait_polished$flower_begin_alt)
 
 # Clean up alt flower end column
 unique(spectrait_polished$flower_end_alt)
-spectrait_polished <- spectrait_polished %>% mutate(
-  flower_end_alt = na_if(flower_end_alt,''))
+spectrait_polished <- spectrait_polished %>%
+  mutate(flower_end_alt = na_if(flower_end_alt, ''))
 
 # Clean up leaf type column
 unique(spectrait_polished$leaf_type)
-spectrait_polished <- spectrait_polished %>% mutate(
-  leaf_type = case_when( leaf_type == 'Leaf' ~ 'leaf',
-                         leaf_type == 'Cladode' ~ 'cladode',
-                         leaf_type == 'Cladodes' ~ 'cladode',
-                         leaf_type == 'Frond' ~ 'frond',
-                         leaf_type == 'None' ~ 'none',
-                         leaf_type == 'Phyllode' ~ 'phyllode',
-                         leaf_type == 'microphylls' ~ 'microphyll',
-                               TRUE ~ leaf_type))
-
+spectrait_polished <- spectrait_polished %>%
+  mutate(leaf_type = case_when(
+    leaf_type == 'Leaf' ~ 'leaf',
+    leaf_type == 'Cladode' ~ 'cladode',
+    leaf_type == 'Cladodes' ~ 'cladode',
+    leaf_type == 'Frond' ~ 'frond',
+    leaf_type == 'None' ~ 'none',
+    leaf_type == 'Phyllode' ~ 'phyllode',
+    leaf_type == 'microphylls' ~ 'microphyll',
+    TRUE ~ leaf_type))
 
 # Fix 1: virtually_no_leaves 0 -> 1 where functional_leaf indicates leafless/culm-based photosynthesis
 vnl_from_functional_leaf_log <- spectrait_polished %>%
@@ -696,7 +673,6 @@ spectrait_polished %>% filter(functional_leaf == "leaf", virtually_no_leaves == 
 # match) and are retained as explicit binary flags. functional_leaf (independently
 # compiled, field-informed) remains the authoritative source for leaf-presence status.
 
-# Provenance: archive full leaf_type column before removal
 leaf_type_removal_log <- spectrait_polished %>%
   select(scientific_name_original, scientific_name_MG, scientific_name_WFO,
          leaf_type, functional_leaf, virtually_no_leaves) %>%
@@ -705,7 +681,6 @@ leaf_type_removal_log <- spectrait_polished %>%
 
 write_csv(leaf_type_removal_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/leaf_type_full_archive_and_removal_log.csv")
 
-# Build reliable structural flags from leaf_type before dropping it
 spectrait_polished <- spectrait_polished %>%
   mutate(
     lvs_frond      = if_else(leaf_type == "frond", 1, 0),
@@ -716,11 +691,9 @@ spectrait_polished <- spectrait_polished %>%
 
 # sanity check: flag counts should match original keyword-confirmed leaf_type counts
 # (frond=19, cladode=18, phyllode=2, microphyll=1, per earlier table(leaf_type))
-colSums(spectrait_polished[c("lvs_frond","lvs_cladode","lvs_phyllode","lvs_microphyll")])
+colSums(spectrait_polished[c("lvs_frond", "lvs_cladode", "lvs_phyllode", "lvs_microphyll")])
 
-# Drop leaf_type
-spectrait_polished <- spectrait_polished %>%
-  select(!leaf_type)
+spectrait_polished <- spectrait_polished %>% select(!leaf_type)
 
 # Provenance: flammability 'i' typo fix
 flammability_typo_log <- spectrait_polished %>%
@@ -730,14 +703,10 @@ flammability_typo_log <- spectrait_polished %>%
          recode_reason = "'i' is a typo for 'l' (low flammability); recoded")
 write_csv(flammability_typo_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/flammability_typo_recode_log.csv")
 
-spectrait_polished <- spectrait_polished %>% mutate(flammability = case_when(
-  flammability == 'i' ~ 'l',
-  TRUE ~ flammability))
-
-# fix flammability where i is a typo of l
-spectrait_polished <- spectrait_polished %>% mutate(flammability = case_when(
-  flammability == 'i' ~ 'l',
-  TRUE ~ flammability))
+spectrait_polished <- spectrait_polished %>%
+  mutate(flammability = case_when(
+    flammability == 'i' ~ 'l',
+    TRUE ~ flammability))
 
 # Provenance: functional_twig column removal
 functional_twig_removal_log <- spectrait_polished %>%
@@ -746,16 +715,14 @@ functional_twig_removal_log <- spectrait_polished %>%
          removal_reason = "functional_twig was a Dimensions-project-specific designation per original 2014 documentation, not intended for general use; column removed")
 write_csv(functional_twig_removal_log, "GCFR_Traits/Data_Workflow_3_Final_Polishing/Provenance/functional_twig_removal_log.csv")
 
-spectrait_polished <- spectrait_polished %>% dplyr::select(!functional_twig)
+spectrait_polished <- spectrait_polished %>% select(!functional_twig)
 
-# Remove functional twig column as this was a project specific designation
-#   and not for general use
-spectrait_polished <- spectrait_polished %>% dplyr::select(!functional_twig)
-which(spectrait_polished  %>% duplicated() == TRUE)
+# Duplicate check (inspection only)
+which(spectrait_polished %>% duplicated() == TRUE)
 
 # Write out polished file
-write_csv(spectrait_polished, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/species_traits.csv',
-          row.names= FALSE)
+write_csv(spectrait_polished,
+          'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/species_traits.csv')
 
 # Clean up vnir spectroscopy #####
 

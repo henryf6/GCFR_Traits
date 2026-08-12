@@ -165,46 +165,65 @@ length(unique((sp_id_misalign_field$finalname))) # great 0 as well!
 
 # WFO taxon harmonization for foliar structure and water traits ####
 
-# Check names against World Flora
+# Add a synthetic row index purely to guarantee a 1:1 join with the WFO match
+# output below. NewUID alone isn't unique here (needs collector + replicate,
+# which aren't reconstructed as a full sample ID until Workflow 3) -- but
+# WFO.match/WFO.one return exactly one output row per input row regardless,
+# so a row index is a safe and simpler join key than any natural column.
+labtrait <- labtrait %>% mutate(wfo_row_id = row_number())
+
 NameCheck <- WFO.match(spec.data = labtrait, WFO.data= wfo_taxonomy, spec.name = "finalname",
                        Fuzzy.min = TRUE)
-# Choose single best accepted WFO taxon designation
 Name_single <- WFO.one(NameCheck)
 
-# Reduce data column output and reorganize columns
-NameCheck_sel <- Name_single %>% dplyr::select(NewUID ,finalname.ORIG, scientificName, family, scientificNameAuthorship)
+# Diagnostic-first: confirm WFO.one preserved exactly one row per input row
+# before trusting a positional join on wfo_row_id
+stopifnot(nrow(Name_single) == nrow(labtrait))
+stopifnot(!any(duplicated(Name_single$wfo_row_id)))
 
-NameCheck_mini_simple <- NameCheck_sel %>% distinct()
+NameCheck_sel <- Name_single %>% dplyr::select(wfo_row_id, scientificName, family, scientificNameAuthorship)
 
-labtrait_wfo <- left_join(labtrait, NameCheck_mini_simple, by = c('finalname' = 'finalname.ORIG'))
+labtrait_wfo <- left_join(labtrait, NameCheck_sel, by = 'wfo_row_id')
 
-labtrait_taxa_cleaned <- labtrait_wfo %>% rename('ScientificName_WFO' = scientificName, 'Species' = finalname, 'Family_WFO' = family,
-                                         'NewUID' = NewUID.x) %>% 
+# Confirm the join didn't change row count (i.e. stayed 1:1)
+stopifnot(nrow(labtrait_wfo) == nrow(labtrait))
+
+labtrait_taxa_cleaned <- labtrait_wfo %>% rename('ScientificName_WFO' = scientificName, 'Species' = finalname, 'Family_WFO' = family) %>% 
   dplyr::select(NewUID, Species:Family_GM, ScientificName_WFO, scientificNameAuthorship, Family_WFO, latitude:twig_fwc)
-
 
 write.csv(labtrait_taxa_cleaned, '/Users/henryfrye/Dropbox/Intellectual_Endeavours/DimensionsDataPaper/GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/lab_trait_taxa_clean.csv',row.names= FALSE)
 
+# Provenance note Aug 12, 2026: Joins have been updated for a unique temporary row index
+# the original join caused a many-to-many join which duplicated rows (27,337). The rows are now 9547. 
+# The duplication issue was addressed in workflow 3, but this catches the issue at the source.
+
 # WFO taxon harmonization for foliar chemistry and canopy traits #####
 
-# Check names against World Flora
+fieldtrait <- fieldtrait %>% mutate(wfo_row_id = row_number())
+
 NameCheckField <- WFO.match(spec.data = fieldtrait, WFO.data= wfo_taxonomy, spec.name = "finalname",
-                       Fuzzy.min = TRUE)
-
-# Choose single best accepted WFO taxon designation
+                            Fuzzy.min = TRUE)
+nrow(NameCheck)
 Name_single_field <- WFO.one(NameCheckField)
+nrow(Name_single_field)
+stopifnot(nrow(Name_single_field) == nrow(fieldtrait))
+stopifnot(!any(duplicated(Name_single_field$wfo_row_id)))
 
-NameCheck_sel_field <-Name_single_field %>% dplyr::select(NewUID ,finalname.ORIG, scientificName, family, scientificNameAuthorship)
+NameCheck_sel_field <- Name_single_field %>% dplyr::select(wfo_row_id, scientificName, family, scientificNameAuthorship)
 
-NameCheck_mini_simple_field <- NameCheck_sel_field %>% distinct()
+fieldtrait_wfo <- left_join(fieldtrait, NameCheck_sel_field, by = 'wfo_row_id')
 
-fieldtrait_wfo <- left_join(fieldtrait, NameCheck_mini_simple_field, by = c('finalname' = 'finalname.ORIG'))
+stopifnot(nrow(fieldtrait_wfo) == nrow(fieldtrait))
 
-fieldtrait_taxa_cleaned <- fieldtrait_wfo %>% rename('ScientificName_WFO' = scientificName, 'Species' = finalname, 'Family_WFO' = family,
-                                                 'NewUID' = NewUID.x) %>% 
+fieldtrait_taxa_cleaned <- fieldtrait_wfo %>% rename('ScientificName_WFO' = scientificName, 'Species' = finalname, 'Family_WFO' = family) %>% 
   dplyr::select(NewUID, Species:Family_GM, ScientificName_WFO, scientificNameAuthorship, Family_WFO, latitude:d_13C_12C)
 
 write.csv(fieldtrait_taxa_cleaned, 'GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/field_trait_taxa_clean.csv',row.names= FALSE)
+
+# Provenance note Aug 12, 2026: Joins have been updated for a unique temporary row index
+# the original join caused a many-to-many join which duplicated rows (7431). The rows are now 2509. 
+# The duplication issue was addressed in workflow 3, but this catches the issue at the source.
+
 
 # WFO taxon harmonization for species trait table ####
 

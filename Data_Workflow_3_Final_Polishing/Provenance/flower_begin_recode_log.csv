@@ -1,0 +1,7 @@
+scientific_name_original,scientific_name_MG,flower_begin,recode_date,recode_reason
+Erica velitaris,Erica velitaris,?,2026-08-11,code meaning could not be determined; recoded to NA
+Amphiglossa triflora,Amphiglossa triflora,H,2026-08-11,code meaning could not be determined; recoded to NA
+Aristida vestita,Aristida vestita,I,2026-08-11,'I' recoded to 'Nov' per G&M flora entry (Nov.-May range)
+Berkheya glabrata,Berkheya glabrata,R,2026-08-11,"'R' recoded to 'Oct'; flora entry gives Oct.-Nov. range, used the more expansive (earlier) bound"
+Erodium cicutarium,Erodium cicutarium,A,2026-08-11,'A' recoded to 'All year'
+Pelargonium abrotanifolium,Pelargonium abrotanifolium,E,2026-08-11,'E' recoded to 'Almost all year'
