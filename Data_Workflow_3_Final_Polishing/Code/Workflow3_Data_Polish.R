@@ -51,17 +51,17 @@ taxa <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Inputs/GMT
 comm_loc <- read.csv('GCFR_Traits/Spatial_Data/Comm_Plot_Lat_Lon_Coords.csv')
 
 # Clean up field traits (foliar chemistry and canopy) #####
-canopy_chem_polished <- canopy_chem %>% rename('scientific_name_original' = 'Species', # original designation
-                                             'genus_MG' = 'Genus_GM', # match the order of the flora citation
-                                             'family_MG' = 'Family_GM', # match the order of the flora citation
-                                             'scientific_name_WFO' = 'ScientificName_WFO', # match other column name format
-                                             'scientific_name_authorship_WFO' = 'scientificNameAuthorship',
-                                             'family_WFO' = 'Family_WFO',
-                                             'subregion' = 'region',
-                                             'canopy_cover_cm2' = 'canopy_area_cm2') %>% # match manuscript descriptions
-                                             select(!c(genus_MG, NewUID)) %>%
-                                            unite(sample_ID, date, sample, subregion, collector, sep = "_", remove = FALSE) %>%
-                                            relocate(sample_ID, .before = 1)
+canopy_chem_polished <- canopy_chem %>% rename('scientific_name_original' = 'Species',
+                                               'genus_MG' = 'Genus_GM',
+                                               'family_MG' = 'Family_GM',
+                                               'scientific_name_WFO' = 'ScientificName_WFO',
+                                               'scientific_name_authorship_WFO' = 'scientificNameAuthorship',
+                                               'family_WFO' = 'Family_WFO',
+                                               'subregion' = 'region',
+                                               'canopy_cover_cm2' = 'canopy_area_cm2',
+                                               'sample_ID' = 'sample_id') %>%   # fold into the existing rename() call
+                                    select(!c(genus_MG, NewUID)) %>%
+                                    relocate(sample_ID, .before = 1)
 # remove this column due to mismatch issues with backbone
 
 # Remove [] from authority column
