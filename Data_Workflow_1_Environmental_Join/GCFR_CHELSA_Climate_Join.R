@@ -94,14 +94,14 @@ write.csv(merged_data_csv, paste0(data_output_path,'/CHELSA_climate_field_traits
 
 # Create summary of MAT and MAP table by subregion 
 region_summary <- merged_data %>% group_by(region) %>%
-  summarise(avgMAT = mean(MAT),
-            sdMAT = sd(MAT),
-            minMAT = min(MAT),
-            maxMAT = max(MAT),
-            avgMAP = mean(MAP),
-            sdMAP = sd(MAP),
-            minMAP = min(MAP),
-            maxMAP = max(MAP))
+  summarise(avgMAT = mean(MAT, na.rm = TRUE),
+            sdMAT = sd(MAT, na.rm = TRUE),
+            minMAT = min(MAT, na.rm = TRUE),
+            maxMAT = max(MAT, na.rm = TRUE),
+            avgMAP = mean(MAP, na.rm = TRUE),
+            sdMAP = sd(MAP, na.rm = TRUE),
+            minMAP = min(MAP, na.rm = TRUE),
+            maxMATP = max(MAP, na.rm = TRUE))
 
 head(region_summary)
 region_summary_csv <- data.frame(region_summary)

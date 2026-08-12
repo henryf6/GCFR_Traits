@@ -51,7 +51,7 @@ for (folder in tiff_folders) {
     joined_points <- cbind(projected_points,values)
     
     # remove points that didn't overlap with that particular raster
-    joined_points <- joined_points %>% na.omit(values)
+    joined_points <- joined_points %>% filter(!is.na(values))
     
     
     # Store the extracted values of the 
@@ -96,5 +96,6 @@ write.csv(point_data, paste0(data_output_path,'/Elevation_field_traits.csv'))
 region_summary <- point_data %>% group_by(region) %>%
   summarise(maxElev = max(Elevation, na.rm = TRUE),
             minElev = min(Elevation, na.rm = TRUE))
+region_summary
 region_summary_csv<- as.data.frame(region_summary)
 write.csv(region_summary_csv[,1:3], paste0(data_output_path,'/Elevation_region_summary_field_traits.csv'))
