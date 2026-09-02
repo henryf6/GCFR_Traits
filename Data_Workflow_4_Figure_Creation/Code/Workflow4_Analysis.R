@@ -695,7 +695,7 @@ summary_struc <- leafstruc %>%
   mutate(type = c("min", "max")) %>%
   ungroup()
 summary_struc
-View(summary_struc)
+
 
 #### Describe the number of canopy structural traits measured ####
 colnames(chem_canop)

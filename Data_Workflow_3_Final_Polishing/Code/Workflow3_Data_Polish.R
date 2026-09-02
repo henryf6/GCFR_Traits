@@ -791,6 +791,8 @@ vnirspec_polished$date <- as.Date(full_dates_vnir)
 # remove low signal measurements, i.e., R800 < .3
 vnirspec_polished <- vnirspec_polished %>% filter(X800 > 30)
 
+vnirspec_polished <- vnirspec_polished %>% select(sample_ID:date, sample, X450:X949)
+
 # Write out polished file
 write.csv(vnirspec_polished, 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Data_Outputs/vnir_spectra.csv',
           row.names= FALSE)
