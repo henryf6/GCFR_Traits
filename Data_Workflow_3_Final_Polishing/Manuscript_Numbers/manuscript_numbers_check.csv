@@ -5,17 +5,17 @@ rows__vnir_spectra,3076,3076,matches,Next up 11a / DAAC guide
 cols__vnir_spectra,511,511,matches,Next up 11a / DAAC guide
 rows__species_traits,2225,2225,matches,Next up 11a / DAAC guide
 rows__releve,44160,44160,matches,Next up 11a / DAAC guide
-trait_obs__leaf_twig,132199,132199,matches,Next up 11a (abstract)
+trait_obs__leaf_twig,132195,132195,matches,"after replicate-label fix 2026-09-21 (was 132,199)"
 trait_obs__canopy_structure,7513,7513,matches,Next up 11a (abstract)
 trait_obs__chemistry,11948,11948,matches,Next up 11a (abstract)
-trait_obs__total,151660,151660,matches,Next up 11a (abstract)
+trait_obs__total,151656,151656,matches,"after replicate-label fix 2026-09-21 (was 151,660)"
 species__leaf_struct_water_traits,1327,1327,matches,Next up 11b
 families__leaf_struct_water_traits,99,99,matches,Next up 11b
 species__canopy_leaf_chemistry,1327,1327,matches,Next up 11b
 families__canopy_leaf_chemistry,99,99,matches,Next up 11b
 leaf__succulence__min,6.53594771241831,6.536,matches,Next up 11c
 leaf__succulence__max,28299.53125,28299.531,matches,Next up 11c
-leaf__succulence__n_blank,928,928,matches,Next up 11c
+leaf__succulence__n_blank,929,929,matches,after replicate-label fix 2026-09-21 (was 928)
 canopy__canopy_cover_cm2__min,0.441786466911065,0.442,matches,Next up 11c
 canopy__canopy_cover_cm2__max,1431388.15279185,1431388.153,matches,Next up 11c
 canopy__C_to_N_ratio__min,6.65462518954224,6.655,matches,Next up 11c
@@ -26,13 +26,13 @@ leaf__leaf_area_cm2__blank_added_vs_intermediate,111,111,matches,Next up 11d
 leaf__leaf_length_cm__blank_added_vs_intermediate,111,111,matches,Next up 11d
 leaf__avg_leaf_width_cm__blank_added_vs_intermediate,111,111,matches,Next up 11d
 leaf__max_leaf_width_cm__blank_added_vs_intermediate,111,111,matches,Next up 11d
-leaf__leaf_thickness_mm__blank_added_vs_intermediate,244,244,matches,Next up 11d
-leaf__leaf_fresh_wgt_g__blank_added_vs_intermediate,209,209,matches,Next up 11d
-leaf__leaf_dry_wgt_g__blank_added_vs_intermediate,172,172,matches,Next up 11d
-leaf__twig_fresh_g__blank_added_vs_intermediate,135,135,matches,Next up 11d
-leaf__twig_dry_g__blank_added_vs_intermediate,177,177,matches,Next up 11d
-leaf__lma__blank_added_vs_intermediate,266,266,matches,Next up 11d
-leaf__lwc__blank_added_vs_intermediate,322,322,matches,Next up 11d
+leaf__leaf_thickness_mm__blank_added_vs_intermediate,239,239,matches,after replicate-label fix 2026-09-21 (was 244)
+leaf__leaf_fresh_wgt_g__blank_added_vs_intermediate,207,207,matches,after replicate-label fix 2026-09-21 (was 209)
+leaf__leaf_dry_wgt_g__blank_added_vs_intermediate,177,177,matches,after replicate-label fix 2026-09-21 (was 172)
+leaf__twig_fresh_g__blank_added_vs_intermediate,136,136,matches,after replicate-label fix 2026-09-21 (was 135)
+leaf__twig_dry_g__blank_added_vs_intermediate,176,176,matches,after replicate-label fix 2026-09-21 (was 177)
+leaf__lma__blank_added_vs_intermediate,267,267,matches,after replicate-label fix 2026-09-21 (was 266)
+leaf__lwc__blank_added_vs_intermediate,324,324,matches,after replicate-label fix 2026-09-21 (was 322)
 leaf__twig_fwc__blank_added_vs_intermediate,282,282,matches,Next up 11d
 releve__share_plots_cover_over_threshold_pct_all,31.8927789934354,31.9,matches,Next up 11e (about)
 vnir__spectra__baviaanskloof,1243,1243,matches,Next up 11f
@@ -49,8 +49,12 @@ releve__surveys__cape_point__1966,81,81,matches,pass doc
 releve__surveys__cape_point__1996,81,81,matches,pass doc
 releve__surveys__cape_point__2010,67,67,matches,pass doc
 qc__zero_cover_recode_log__rows,14,14,matches,pass doc / response letter
-releve__records_percent_cover_below_0.1,304,354,DIFFERS,pass doc (354 = 304 + 50)
+leaf__ldmc__blank_added_vs_intermediate,346,346,matches,after replicate-label fix 2026-09-21
+leaf__succulence__blank_added_vs_intermediate,421,421,matches,after replicate-label fix 2026-09-21
+release_leaf__rows_sharing_a_sample_replicate_key,0,0,matches,after replicate-label fix 2026-09-21
+removal_map__keys_matching_no_release_row,0,0,matches,after replicate-label fix 2026-09-21
+releve__records_percent_cover_below_0.1,304,304,matches,"recomputed (pass doc said 354, double-counting the 50 at 0.01)"
 share_rows_Asteraceae_pct__canopy__cederberg,14.4578313253012,14,matches,manuscript (rounded to integer)
 share_rows_Asteraceae_pct__canopy__htr,32.3135755258126,32,matches,manuscript (rounded to integer)
-share_rows_Asteraceae_pct__canopy__cederberg,14.4578313253012,14.9,DIFFERS,response letter (about)
-share_rows_Asteraceae_pct__canopy__htr,32.3135755258126,33.3,DIFFERS,response letter (about)
+share_rows_Asteraceae_pct__canopy__cederberg,14.4578313253012,14.9,DIFFERS,"response letter (about; does not reproduce, open)"
+share_rows_Asteraceae_pct__canopy__htr,32.3135755258126,33.3,DIFFERS,"response letter (about; does not reproduce, open)"

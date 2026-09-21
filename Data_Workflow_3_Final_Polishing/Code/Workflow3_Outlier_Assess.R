@@ -36,7 +36,6 @@ data_quality_path = 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Quality_Check_O
 intermediate_data_path = 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Intermediate_Outputs/'
 
 write_csv(fieldtrait, paste0(intermediate_data_path, 'canopy_chem_intermediate.csv'))
-write_csv(labtrait, paste0(intermediate_data_path, 'leaf_struc_intermediate.csv'))
 
 # ---- Resequence duplicated replicate labels within sample_id --------------
 # Where a sample_id has replicate labels that repeat (e.g., 1,1,2,2,3,3...),
@@ -71,6 +70,11 @@ labtrait %>%
   filter(sample_id %in% dupe_replicate_samples) %>%
   count(sample_id, replicate) %>%
   filter(n > 1)   # should return 0 rows
+
+# Written after the resequencing above so the intermediate file (read by
+# Workflow3_Data_Polish.R) carries the same replicate labels as the QC
+# outputs; the outlier removal joins on sample_id + replicate.
+write_csv(labtrait, paste0(intermediate_data_path, 'leaf_struc_intermediate.csv'))
 
 # ---- Re-calculate derived values to ensure --------------
 
