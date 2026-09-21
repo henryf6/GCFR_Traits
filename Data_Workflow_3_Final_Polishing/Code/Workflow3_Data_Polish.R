@@ -106,6 +106,10 @@ canopy_chem_polished <- canopy_chem_polished %>%
 # Remove obvious carbon outliers above 100% and treat as NA
 canopy_chem_polished <- canopy_chem_polished %>% mutate(percent_C = na_if(percent_C,max(canopy_chem_polished$percent_C, na.rm = TRUE)))
 
+# Recompute C:N from the final %C and %N so all three columns agree
+canopy_chem_polished <- canopy_chem_polished %>%
+  mutate(C_to_N_ratio = percent_C / percent_N)
+
 # ---- NA out canopy axis/area values for confirmed geometry mismatches ----
 # Axis1, axis2, and area are NA'd together -- unlike the lma "suspected_bad"
 # check belwow, geometry mismatches don't tell us whether an axis was mis-entered
@@ -367,7 +371,7 @@ leaf_struc_polished_flagged <- leaf_struc_polished_flagged %>%
     lma        = leaf_dry_wgt_g / leaf_area_cm2 * 10000,
     lwc        = (leaf_fresh_wgt_g - leaf_dry_wgt_g) / leaf_dry_wgt_g,
     ldmc       = leaf_dry_wgt_g / leaf_fresh_wgt_g,
-    succulence = leaf_fresh_wgt_g / leaf_area_cm2 * 10000, 
+    succulence = (leaf_fresh_wgt_g - leaf_dry_wgt_g) / leaf_area_cm2 * 10000, 
     twig_fwc   = (twig_fresh_g - twig_dry_g) / twig_dry_g,
     lwr        = leaf_length_cm / avg_leaf_width_cm   
   )

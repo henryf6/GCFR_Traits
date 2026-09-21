@@ -27,6 +27,11 @@ fieldtrait <- fieldtrait %>%
   relocate(sample_id, .before = 1) %>%
   filter(!duplicated(.))
 
+# Canopy cover: raw value was an ellipse (pi*a1*a2/4); recompute with the
+# circle-from-mean-diameter formula stated in the manuscript Methods.
+fieldtrait <- fieldtrait %>%
+  mutate(canopy_area_cm2 = pi * ((canopy_axis_1_cm + canopy_axis_2_cm) / 4)^2)
+
 data_quality_path = 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Quality_Check_Outputs/'
 intermediate_data_path = 'GCFR_Traits/Data_Workflow_3_Final_Polishing/Intermediate_Outputs/'
 
