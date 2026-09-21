@@ -1,5 +1,5 @@
 ########################################################
-# Workflow4_Outlier_Detection.R
+# Workflow3_Outlier_Assess.R
 #
 # Purpose: Flag potentially problematic trait values using
 # a tiered approach 
@@ -392,10 +392,12 @@ chem_flags <- purrr::pmap_dfr(chem_bounds, function(trait, lower, upper) {
 # the one chemistry flag is from an unreasonable carbon value (over 100% ) that will get removed later.
 
 # ---- 9. Canopy geometry recheck ---------------------------------------
-# Formula follows Mueller-Dombois & Ellenberg canopy cover convention
-# (mean-radius circle approximation), not a true ellipse area -- consistent
-# with how canopy_area_cm2 (renamed canopy_cover_cm2 downstream) was
-# originally computed in the field.
+# The raw field canopy_area_cm2 was an ellipse (pi*a1*a2/4, all 2,509 rows).
+# Section 0 replaces it with the mean-diameter circle formula from the
+# manuscript Methods, so canopy_area_check below uses the same formula and
+# the ratio is always 1: this check is now a no-op regression guard (it
+# would only flag if section 0 were changed or removed). It no longer
+# catches transcription errors in the raw area.
 fieldtrait_recalc <- fieldtrait %>%
   mutate(
     canopy_area_check = pi * ((canopy_axis_1_cm  + canopy_axis_2_cm )/ 4)^2,
@@ -439,7 +441,8 @@ branch_order_flags <- fieldtrait %>%
 
 # ---- 12. LES covariation check (N vs LMA), robust version --------------
 # Pre-filter: exclude sample_ids already flagged as bad LMA (high-confidence
-# only) by Workflow4, so they don't distort the fit before it even runs.
+# only) by the Tier 1a lab screen above (sections 1 and 4), so they don't
+# distort the fit before it even runs.
 bad_lma_ids <- bad_lma %>%
   filter(confidence == "both") %>%
   pull(sample_id)

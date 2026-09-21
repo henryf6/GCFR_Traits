@@ -355,10 +355,13 @@ leaf_struc_polished_flagged <- leaf_struc_polished_flagged %>%
 
 leaf_struc_polished_flagged %>% count(quality_flag, sort = TRUE)
 
-# Recompute derived traits from the now-NA'd raw components. Since this
-# recalculation matched stored values exactly on the unflagged data (0
-# mismatches), this safely propagates every raw-column removal into its
-# dependent derived traits without hand-tracking which trait needs which column.
+# Recompute derived traits from the now-NA'd raw components. The same
+# formulas reproduce the stored upstream values (g/cm^2 scale) exactly on the
+# unflagged data (0 mismatches for lma, lwc/fwc, ldmc, succulence and twig_fwc;
+# succulence = (fresh - dry) / area), so this safely propagates every
+# raw-column removal into its dependent derived traits without hand-tracking
+# which trait needs which column. (Before 2026-09-21 succulence here was
+# fresh/area, which did not match the stored values.)
 # recompute all derived traits from the now-NA'd raw columns ----
 # lma and succulence are computed here in g/m^2 (publication unit) rather
 # than the internal g/cm^2 scale used upstream (leaf_struc_intermediate.csv
