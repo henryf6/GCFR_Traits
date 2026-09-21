@@ -491,7 +491,12 @@ p2 <- ggplot(cv_stats, aes(x = wavelength, y = cv)) +
 grouped_median <- vnir_long %>%
   group_by(subregion, wavelength) %>%
   summarise(median = median(reflectance, na.rm = TRUE), .groups = "drop")
-grouped_median$subregion <- factor(x = grouped_median$subregion, levels = sort(unique(grouped_median$subregion)))
+# Same display labels as the other summary figures (subregion is lowercase,
+# with cape_point underscored, in vnir_spectra.csv)
+stopifnot(identical(sort(unique(grouped_median$subregion)),
+                    c("baviaanskloof", "cape_point", "cederberg", "hangklip", "htr", "langeberg")))
+grouped_median$subregion <- factor(x = grouped_median$subregion, levels = sort(unique(grouped_median$subregion)),
+                                   labels = c("Baviaanskloof", "Cape Point", "Cederberg", "Hangklip", "Hantam-Tanqua-\nRoggeveld", "Langeberg"))
 
 # Plot 3: Median reflectance by subregion with Dark2 palette and internal legend
 p3 <- ggplot(grouped_median, aes(x = wavelength, y = median, color = subregion)) +
