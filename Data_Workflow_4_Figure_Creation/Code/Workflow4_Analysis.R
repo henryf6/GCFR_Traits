@@ -96,9 +96,9 @@ combined_foliar_chem <-ggarrange(N_plot, C_plot, N_iso, C_iso, labels = c('A','B
 combined_foliar_chem
 
 # Save as tiff and jpeg
-ggsave(filename = paste0(figpath, 'foliar_summary_plot.tiff'), plot = combined_foliar_chem, width = 8, dpi = 300, units = "in",
+ggsave(filename = paste0(figpath, 'foliar_summary_plot.tiff'), plot = combined_foliar_chem, width = 8, height = 4.2167, dpi = 300, units = "in",
        bg= 'white')
-ggsave(filename = paste0(figpath, 'foliar_summary_plot.jpeg'), plot = combined_foliar_chem, width = 8, dpi = 300, units = "in",
+ggsave(filename = paste0(figpath, 'foliar_summary_plot.jpeg'), plot = combined_foliar_chem, width = 8, height = 4.2167, dpi = 300, units = "in",
        bg= 'white')
 
 
@@ -150,10 +150,11 @@ combined_foliar_struct <-ggarrange(lma, lwc, thick, lwr, ncol = 2, nrow = 2,
 ) + theme(text = element_text(size = 12, family = "sans"))
 combined_foliar_struct
 
-# Save as tiff and jpeg
-ggsave(filename = paste0(figpath, 'foliar_summary_plot_struct.tiff'), plot = combined_foliar_struct, width = 8, dpi = 300, units = "in",
+# Save as tiff and jpeg (height fixed at the size of the manuscript figures, 8 x 4.2167 in,
+# so the output does not depend on the graphics device / RStudio plot pane)
+ggsave(filename = paste0(figpath, 'foliar_summary_plot_struct.tiff'), plot = combined_foliar_struct, width = 8, height = 4.2167, dpi = 300, units = "in",
        bg= 'white')
-ggsave(filename = paste0(figpath, 'foliar_summary_plot_struct.jpeg'), plot = combined_foliar_struct, width = 8, dpi = 300, units = "in",
+ggsave(filename = paste0(figpath, 'foliar_summary_plot_struct.jpeg'), plot = combined_foliar_struct, width = 8, height = 4.2167, dpi = 300, units = "in",
        bg= 'white')
 
 # An alternative visualization by family (not used in manuscript)
