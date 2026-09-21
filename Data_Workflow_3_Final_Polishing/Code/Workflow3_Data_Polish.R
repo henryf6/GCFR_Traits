@@ -769,9 +769,15 @@ vnirspec_polished$subregion <- str_to_lower(vnirspec_polished$subregion)
 # Fix the baviaanskloof misspelling in subregion
 vnirspec_polished <- vnirspec_polished %>% mutate(subregion = case_when(
   subregion == 'baviaanksloof' ~ 'baviaanskloof',
+  subregion == 'cape point'    ~ 'cape_point',   # match trait files
   TRUE ~ subregion
-  
 ))
+
+
+vnirspec_polished <- vnirspec_polished %>%
+  select(-sample_ID) %>%
+  unite(sample_ID, date, sample, subregion, sep = "_", remove = FALSE) %>%
+  relocate(sample_ID, .before = 1)
 
 
 # Create year of measurement column (based on this file: /Users/henryfrye/Dropbox/Intellectual_Endeavours/UConn/Research/ZA_Dimensions_Data/data_base/Spec_Trait_All.csv)
@@ -781,7 +787,7 @@ vnirspec_polished <- vnirspec_polished %>% mutate(year = case_when(
   subregion == 'hangklip' ~ 2012,
   subregion == 'langeberg' ~ 2012,
   subregion == 'cederberg' ~ 2012,
-  subregion == 'cape point' ~ 2010
+  subregion == 'cape_point' ~ 2010
 ))
 
 
