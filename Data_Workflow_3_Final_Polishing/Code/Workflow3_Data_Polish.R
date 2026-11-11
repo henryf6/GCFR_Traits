@@ -39,6 +39,8 @@ struc_outliers             <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polish
 chem_outliers             <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Quality_Check_Outputs/bad_chemistry_values.csv')
 canopy_geom_outliers      <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Quality_Check_Outputs/bad_canopy_geometry_values.csv')
 height_magnitude_outliers <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Quality_Check_Outputs/bad_height_magnitude_values.csv')
+height_flora_outliers     <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Quality_Check_Outputs/bad_height_vs_flora_values.csv')
+height_zero_outliers      <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Quality_Check_Outputs/bad_height_zero_values.csv')
 canopy_magnitude_outliers <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Quality_Check_Outputs/bad_canopy_magnitude_values.csv')
 branch_order_outliers     <- read_csv('GCFR_Traits/Data_Workflow_3_Final_Polishing/Quality_Check_Outputs/bad_branch_order_values.csv')
 n_lma_covariation_outliers <- read_csv(
@@ -138,6 +140,8 @@ canopy_chem_polished_flagged %>%
 
 flag_sources <- list(
   height_magnitude  = height_magnitude_outliers  %>% distinct(sample_id),
+  height_vs_flora   = height_flora_outliers      %>% distinct(sample_id),
+  height_zero       = height_zero_outliers       %>% distinct(sample_id),
   canopy_magnitude  = canopy_magnitude_outliers  %>% distinct(sample_id),
   n_lma_covariation = n_lma_covariation_outliers %>% distinct(sample_id)
 )

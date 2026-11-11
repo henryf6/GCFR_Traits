@@ -435,6 +435,34 @@ flag_magnitude_error <- function(df, group_var, trait_col, min_n = 5, log10_thre
 height_magnitude_flags <- flag_magnitude_error(fieldtrait, "Family_WFO", "height_cm", log10_threshold = 2)
 canopy_magnitude_flags <- flag_magnitude_error(fieldtrait, "Family_WFO", "canopy_area_cm2", log10_threshold = 2)
 
+# Height vs. flora maximum (reviewer request): the family-median check above
+# is very permissive (100x), so also compare each field height against the
+# species' maximum height from the floras (max_height_cm in the species
+# trait file, joined by WFO name). Flag if field height > 3x the flora max.
+# The flora value is a typical maximum, not a hard ceiling, and may itself be
+# wrong, so these are soft flags only (kept in quality_flag, nothing removed).
+height_flora_ratio_threshold <- 3
+
+flora_max_height <- read.csv('GCFR_Traits/Data_Workflow_2_Taxonomic_Cleaning/Data_Outputs/species_trait_taxa_clean.csv') %>%
+  filter(!is.na(max_height_cm), !is.na(ScientificName_WFO)) %>%
+  group_by(ScientificName_WFO) %>%
+  summarise(flora_max_height_cm = max(max_height_cm), .groups = "drop")
+
+height_flora_flags <- fieldtrait %>%
+  filter(!is.na(height_cm), height_cm > 0) %>%
+  left_join(flora_max_height, by = "ScientificName_WFO") %>%
+  filter(!is.na(flora_max_height_cm)) %>%
+  mutate(height_to_flora_max = height_cm / flora_max_height_cm) %>%
+  filter(height_to_flora_max > height_flora_ratio_threshold) %>%
+  select(sample_id, NewUID, ScientificName_WFO, Family_WFO,
+         height_cm, flora_max_height_cm, height_to_flora_max)
+
+# Non-positive heights (e.g. Drosera trinervia = 0, a tiny prostrate plant):
+# not a plausible height value, but likely very small in reality. Flag only.
+height_zero_flags <- fieldtrait %>%
+  filter(!is.na(height_cm), height_cm <= 0) %>%
+  select(sample_id, NewUID, ScientificName_WFO, Family_WFO, height_cm)
+
 # ---- 11. Branch order validity ------------------------------------------
 branch_order_flags <- fieldtrait %>%
   filter(!is.na(branch_order)) %>%
@@ -488,6 +516,8 @@ write_csv(chem_flags,             paste0(data_quality_path, 'bad_chemistry_value
 write_csv(canopy_geom_flags,      paste0(data_quality_path, 'bad_canopy_geometry_values.csv'))
 write_csv(height_magnitude_flags, paste0(data_quality_path, 'bad_height_magnitude_values.csv'))
 write_csv(canopy_magnitude_flags, paste0(data_quality_path, 'bad_canopy_magnitude_values.csv'))
+write_csv(height_flora_flags,     paste0(data_quality_path, 'bad_height_vs_flora_values.csv'))
+write_csv(height_zero_flags,      paste0(data_quality_path, 'bad_height_zero_values.csv'))
 write_csv(branch_order_flags,     paste0(data_quality_path, 'bad_branch_order_values.csv'))
 write_csv(n_lma %>% filter(flag_covariation),
           paste0(data_quality_path, 'outlying_n_lma_covariation_values.csv'))
@@ -498,6 +528,8 @@ field_flag_list <- list(
   chemistry        = chem_flags %>% rename(any_value = trait_flagged),
   canopy_geom      = canopy_geom_flags,
   height_magnitude = height_magnitude_flags,
+  height_vs_flora  = height_flora_flags,
+  height_zero      = height_zero_flags,
   canopy_magnitude = canopy_magnitude_flags,
   branch_order     = branch_order_flags,
   n_lma_covariation = n_lma %>% filter(flag_covariation)

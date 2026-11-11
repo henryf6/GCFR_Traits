@@ -1,0 +1,20 @@
+sample_id,NewUID,ScientificName_WFO,Family_WFO,height_cm,flora_max_height_cm,height_to_flora_max
+726_40_baviaanskloof_ASH,726_40_baviaanskloof,Polygala illepida,Polygalaceae,60,15,4
+726_5_baviaanskloof_ASH,726_5_baviaanskloof,Othonna carnosa,Asteraceae,100,10,10
+712_3_langeberg_EFG,712_3_langeberg,Gnidia galpini,Thymelaeaceae,200,60,3.3333333333333335
+801_23_cederberg_EFG,801_23_cederberg,Chrysitrix junciformis,Cyperaceae,95,30,3.1666666666666665
+703_13_baviaanskloof_HK,703_13_baviaanskloof,Aspalathus kougaensis,Fabaceae,450,100,4.5
+712_33_baviaanskloof_JL,712_33_baviaanskloof,Polygala illepida,Polygalaceae,75,15,5
+718_10_baviaanskloof_JL,718_10_baviaanskloof,Euryops rehmannii,Asteraceae,170,40,4.25
+723_33_cederberg_JS,723_33_cederberg,Oscularia steenbergensis,Aizoaceae,35,10,3.5
+730_3_cederberg_JS,730_3_cederberg,Cliffortia hexandra,Rosaceae,310,60,5.166666666666667
+701_16_baviaanskloof_KE,701_16_baviaanskloof,Euphorbia rhombifolia,Euphorbiaceae,180,50,3.6
+701_57_baviaanskloof_KE,701_57_baviaanskloof,Thesium commutatum,Santalaceae,200,30,6.666666666666667
+708_3_baviaanskloof_KE,708_3_baviaanskloof,Othonna carnosa,Asteraceae,60,10,6
+731_10_cederberg_SM,731_10_cederberg,Phylica ambigua,Rhamnaceae,200,60,3.3333333333333335
+731_13_cederberg_SM,731_13_cederberg,Euclea lancea,Ebenaceae,350,100,3.5
+702_11_langeberg_TEM,702_11_langeberg,Leucadendron eucalyptifolium,Proteaceae,2200,500,4.4
+704_7_langeberg_TEM,704_7_langeberg,Ehrharta setacea,Poaceae,35,6,5.833333333333333
+705_12_baviaanskloof_TEM,705_12_baviaanskloof,Pelargonium tetragonum,Geraniaceae,110,25,4.4
+709_25_baviaanskloof_TEM,709_25_baviaanskloof,Pegolettia baccharidifolia,Asteraceae,125,30,4.166666666666667
+814_4_cape_point_a,814_4_cape_point,Erica coarctata,Ericaceae,101,30,3.3666666666666667
