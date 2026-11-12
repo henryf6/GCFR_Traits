@@ -192,8 +192,10 @@ canopy__pubescence__n_L,135,Table 2 / DAAC doc,Data_Outputs/canopy_leaf_chemistr
 canopy__pubescence__n_N,1153,Table 2 / DAAC doc,Data_Outputs/canopy_leaf_chemistry.csv,"sum(canopy[[pubescence_col]] == ""N"", na.rm = TRUE)"
 canopy__pubescence__n_S,148,Table 2 / DAAC doc,Data_Outputs/canopy_leaf_chemistry.csv,"sum(canopy[[pubescence_col]] == ""S"", na.rm = TRUE)"
 canopy__pubescence__n_blank,531,Table 2 / DAAC doc,Data_Outputs/canopy_leaf_chemistry.csv,sum(is.na(canopy[[pubescence_col]]))
-quality_flag__canopy__rows_with_any_flag,122,Methods / Usage Notes / DAAC doc,Data_Outputs/canopy_leaf_chemistry.csv,sum(!is.na(canopy$quality_flag))
+quality_flag__canopy__rows_with_any_flag,142,Methods / Usage Notes / DAAC doc,Data_Outputs/canopy_leaf_chemistry.csv,sum(!is.na(canopy$quality_flag))
 quality_flag__canopy__canopy_magnitude,98,Methods / Usage Notes / DAAC doc,Data_Outputs/canopy_leaf_chemistry.csv,"flag_has(canopy$quality_flag[!is.na(canopy$quality_flag)], ""canopy_magnitude"")"
+quality_flag__canopy__height_vs_flora,19,Methods / Usage Notes / DAAC doc,Data_Outputs/canopy_leaf_chemistry.csv,"flag_has(canopy$quality_flag[!is.na(canopy$quality_flag)], ""height_vs_flora"")"
+quality_flag__canopy__height_zero,1,Methods / Usage Notes / DAAC doc,Data_Outputs/canopy_leaf_chemistry.csv,"flag_has(canopy$quality_flag[!is.na(canopy$quality_flag)], ""height_zero"")"
 quality_flag__canopy__n_lma_covariation,26,Methods / Usage Notes / DAAC doc,Data_Outputs/canopy_leaf_chemistry.csv,"flag_has(canopy$quality_flag[!is.na(canopy$quality_flag)], ""n_lma_covariation"")"
 quality_flag__leaf__rows_with_any_flag,218,Methods / Usage Notes / DAAC doc,Data_Outputs/leaf_struct_water_traits.csv,sum(!is.na(leafstruc$quality_flag))
 quality_flag__leaf__global_range_avg_leaf_width_cm,11,Methods / Usage Notes / DAAC doc,Data_Outputs/leaf_struct_water_traits.csv,"flag_has(leafstruc$quality_flag[!is.na(leafstruc$quality_flag)], ""global_range_avg_leaf_width_cm"")"
