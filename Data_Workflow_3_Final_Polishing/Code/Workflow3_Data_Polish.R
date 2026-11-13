@@ -1029,6 +1029,9 @@ create_data_dictionary <- function(df) {
   for (col in names(df)) {
     col_data <- df[[col]]
     col_class <- class(col_data)[1]
+    # Blank strings are written to the CSV as empty cells, so they are missing
+    # values for anyone reading the released file (e.g. quality_flag uses "").
+    if (is.character(col_data)) col_data[trimws(col_data) == ""] <- NA_character_
     num_missing <- sum(is.na(col_data))
     
     if (is.numeric(col_data)) {

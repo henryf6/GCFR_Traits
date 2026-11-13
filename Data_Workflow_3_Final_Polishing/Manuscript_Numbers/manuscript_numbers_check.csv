@@ -56,5 +56,3 @@ removal_map__keys_matching_no_release_row,0,0,matches,after replicate-label fix 
 releve__records_percent_cover_below_0.1,304,304,matches,"recomputed (pass doc said 354, double-counting the 50 at 0.01)"
 share_rows_Asteraceae_pct__canopy__cederberg,14.4578313253012,14,matches,manuscript (rounded to integer)
 share_rows_Asteraceae_pct__canopy__htr,32.3135755258126,32,matches,manuscript (rounded to integer)
-share_rows_Asteraceae_pct__canopy__cederberg,14.4578313253012,14.9,DIFFERS,"response letter (about; does not reproduce, open)"
-share_rows_Asteraceae_pct__canopy__htr,32.3135755258126,33.3,DIFFERS,"response letter (about; does not reproduce, open)"

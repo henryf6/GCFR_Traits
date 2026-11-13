@@ -28,4 +28,4 @@
 "ldmc",NA,"numeric","0.0155268022181146 - 0.9375",NA,853
 "lwr",NA,"numeric","0.211111111111111 - 3086.66666666667",NA,151
 "twig_fwc",NA,"numeric","0.005 - 46.5",NA,2689
-"quality_flag",NA,"character"," - n_lma_covariation",NA,0
+"quality_flag",NA,"character","global_range_avg_leaf_width_cm - n_lma_covariation",NA,9329

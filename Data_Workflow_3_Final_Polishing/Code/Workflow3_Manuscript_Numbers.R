@@ -165,9 +165,8 @@ expected <- tribble(
   'removal_map__keys_matching_no_release_row',       0,         'after replicate-label fix 2026-09-21',
   'releve__records_percent_cover_below_0.1',         304,       'recomputed (pass doc said 354, double-counting the 50 at 0.01)',
   'share_rows_Asteraceae_pct__canopy__cederberg',    14,        'manuscript (rounded to integer)',
-  'share_rows_Asteraceae_pct__canopy__htr',          32,        'manuscript (rounded to integer)',
-  'share_rows_Asteraceae_pct__canopy__cederberg',    14.9,      'response letter (about; does not reproduce, open)',
-  'share_rows_Asteraceae_pct__canopy__htr',          33.3,      'response letter (about; does not reproduce, open)'
+  'share_rows_Asteraceae_pct__canopy__htr',          32,        'manuscript (rounded to integer)'
+  # response-letter values 14.9 / 33.3 removed 2026-11-13: the letter now reports 14 / 32, as above
 )
 tolerance      <- 0.0005    # numeric comparison tolerance (values are reported to 3 decimals)
 tolerance_about <- 0.05     # for items expected only "about" (rounded to 1 decimal)

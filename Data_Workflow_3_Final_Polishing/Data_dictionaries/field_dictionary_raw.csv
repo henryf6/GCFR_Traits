@@ -22,4 +22,4 @@
 "C_to_N_ratio",NA,"numeric","6.65462518954224 - 240.7",NA,120
 "d_15N_14N",NA,"numeric","-10.26540887 - 17.38413758",NA,119
 "d_13C_12C",NA,"numeric","-33.2334073 - -11.50918626",NA,119
-"quality_flag",NA,"character"," - n_lma_covariation",NA,0
+"quality_flag",NA,"character","canopy_magnitude - n_lma_covariation",NA,2367
