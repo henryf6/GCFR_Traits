@@ -20,6 +20,11 @@ This workflow ensures common column names across data files and conducts data cl
 
 This workflow creates summary figures and information about each dataset.
 
+## License
+
+- **Data** (the CSV files and data dictionaries): [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); see `LICENSE-DATA`. Please cite the data paper and the DAAC data archive.
+- **Code** (the R scripts and workflows): [MIT](https://opensource.org/license/mit); see `LICENSE`.
+
 ## Data availability
 
 The final, quality-controlled version of the data is archived at the NASA ORNL DAAC (V2): [https://doi.org/10.3334/ORNLDAAC/2528](https://doi.org/10.3334/ORNLDAAC/2528). The five final data files are in `Data_Workflow_3_Final_Polishing/Data_Outputs/`. The DAAC uses different file names:
